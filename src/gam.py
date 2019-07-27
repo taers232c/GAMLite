@@ -46,7 +46,6 @@ import time
 
 from gamlib import glapi as API
 from gamlib import glcfg as GC
-from gamlib import glentity
 from gamlib import glgapi as GAPI
 from gamlib import glgcp as GCP
 from gamlib import glgdata as GDATA
@@ -89,8 +88,6 @@ def itervalues(d, **kw):
 
 def ISOformatTimeStamp(timestamp):
   return timestamp.isoformat('T', 'seconds')
-
-Ent = glentity.GamEntity()
 
 GM.Globals[GM.GAM_PATH] = os.path.dirname(os.path.realpath(__file__)) if not getattr(sys, 'frozen', False) else os.path.dirname(sys.executable)
 
@@ -366,19 +363,20 @@ def accessErrorMessage(cd):
              customerKey=GC.Values[GC.CUSTOMER_ID], fields='id')
   except GAPI.badRequest:
     return formatKeyValueList('',
-                              [Ent.Singular(Ent.CUSTOMER_ID), GC.Values[GC.CUSTOMER_ID],
+                              ['Customer ID', GC.Values[GC.CUSTOMER_ID],
                                Msg.INVALID],
                               '')
   except GAPI.resourceNotFound:
     return formatKeyValueList('',
-                              [Ent.Singular(Ent.CUSTOMER_ID), GC.Values[GC.CUSTOMER_ID],
+                              ['Customer ID', GC.Values[GC.CUSTOMER_ID],
                                Msg.DOES_NOT_EXIST],
                               '')
   except GAPI.forbidden:
     return formatKeyValueList('',
-                              Ent.FormatEntityValueList([Ent.CUSTOMER_ID, GC.Values[GC.CUSTOMER_ID],
-                                                         Ent.DOMAIN, GC.Values[GC.DOMAIN],
-                                                         Ent.USER, GM.Globals[GM.ADMIN]])+[Msg.ACCESS_FORBIDDEN],
+                              ['Customer ID', GC.Values[GC.CUSTOMER_ID],
+                               'Domain', GC.Values[GC.DOMAIN],
+                               'User', GM.Globals[GM.ADMIN],
+                               Msg.ACCESS_FORBIDDEN],
                               '')
   return None
 
@@ -408,22 +406,22 @@ def APIAccessDeniedExit():
   systemErrorExit(API_ACCESS_DENIED_RC, Msg.API_ACCESS_DENIED)
 
 def invalidClientSecretsJsonExit():
-  stderrErrorMsg(Msg.DOES_NOT_EXIST_OR_HAS_INVALID_FORMAT.format(Ent.Singular(Ent.CLIENT_SECRETS_JSON_FILE), GC.Values[GC.CLIENT_SECRETS_JSON]))
+  stderrErrorMsg(Msg.DOES_NOT_EXIST_OR_HAS_INVALID_FORMAT.format('Client Secrets File', GC.Values[GC.CLIENT_SECRETS_JSON]))
   writeStderr(Msg.INSTRUCTIONS_CLIENT_SECRETS_JSON)
   systemErrorExit(CLIENT_SECRETS_JSON_REQUIRED_RC, None)
 
 def invalidOauth2serviceJsonExit():
-  stderrErrorMsg(Msg.DOES_NOT_EXIST_OR_HAS_INVALID_FORMAT.format(Ent.Singular(Ent.OAUTH2SERVICE_JSON_FILE), GC.Values[GC.OAUTH2SERVICE_JSON]))
+  stderrErrorMsg(Msg.DOES_NOT_EXIST_OR_HAS_INVALID_FORMAT.format('Service Account OAuth2 File', GC.Values[GC.OAUTH2SERVICE_JSON]))
   writeStderr(Msg.INSTRUCTIONS_OAUTH2SERVICE_JSON)
   systemErrorExit(OAUTH2SERVICE_JSON_REQUIRED_RC, None)
 
 def invalidOauth2TxtExit():
-  stderrErrorMsg(Msg.DOES_NOT_EXIST_OR_HAS_INVALID_FORMAT.format(Ent.Singular(Ent.OAUTH2_TXT_FILE), GC.Values[GC.OAUTH2_TXT]))
+  stderrErrorMsg(Msg.DOES_NOT_EXIST_OR_HAS_INVALID_FORMAT.format('Client OAuth2 File', GC.Values[GC.OAUTH2_TXT]))
   writeStderr(Msg.EXECUTE_GAM_OAUTH_CREATE)
   systemErrorExit(OAUTH2_TXT_REQUIRED_RC, None)
 
 def invalidDiscoveryJsonExit(fileName):
-  stderrErrorMsg(Msg.DOES_NOT_EXIST_OR_HAS_INVALID_FORMAT.format(Ent.Singular(Ent.DISCOVERY_JSON_FILE), fileName))
+  stderrErrorMsg(Msg.DOES_NOT_EXIST_OR_HAS_INVALID_FORMAT.format('Discovery File', fileName))
   systemErrorExit(INVALID_JSON_RC, None)
 
 # Choices is the valid set of choices that was expected
@@ -521,7 +519,7 @@ def getHTTPError(responses, http_status, reason, message):
 def entityServiceNotApplicableWarning(entityType, entityName):
   setSysExitRC(SERVICE_NOT_APPLICABLE_RC)
   writeStderr(formatKeyValueList('',
-                                 [Ent.Singular(entityType), entityName, Msg.SERVICE_NOT_APPLICABLE],
+                                 [entityType, entityName, Msg.SERVICE_NOT_APPLICABLE],
                                  '\n'))
 
 def cleanFilename(filename):
@@ -642,16 +640,16 @@ def SetGlobalVariables(configFile, sectionName=None):
       return configparser.DEFAULTSECT
     if GM.Globals[GM.PARSER].has_section(value):
       return value
-    systemErrorExit(CONFIG_ERROR_RC, formatKeyValueList('', [Ent.Singular(Ent.SECTION), value, Msg.NOT_FOUND], ''))
+    systemErrorExit(CONFIG_ERROR_RC, formatKeyValueList('', ['Section', value, Msg.NOT_FOUND], ''))
 
   def _printValueError(sectionName, itemName, value, errMessage):
     status['errors'] = True
     printErrorMessage(CONFIG_ERROR_RC,
                       formatKeyValueList('',
-                                         [Ent.Singular(Ent.CONFIG_FILE), GM.Globals[GM.GAM_CFG_FILE],
-                                          Ent.Singular(Ent.SECTION), sectionName,
-                                          Ent.Singular(Ent.ITEM), itemName,
-                                          Ent.Singular(Ent.VALUE), value,
+                                         ['Config File', GM.Globals[GM.GAM_CFG_FILE],
+                                          'Section', sectionName,
+                                          'Item', itemName,
+                                          'Value', value,
                                           errMessage],
                                          ''))
 
@@ -748,7 +746,7 @@ def SetGlobalVariables(configFile, sectionName=None):
         config.read_file(f)
     except (configparser.MissingSectionHeaderError, configparser.ParsingError) as e:
       systemErrorExit(CONFIG_ERROR_RC, formatKeyValueList('',
-                                                          [Ent.Singular(Ent.CONFIG_FILE), fileName,
+                                                          ['Config File', fileName,
                                                            Msg.INVALID, str(e)],
                                                           ''))
     except IOError as e:
@@ -1306,7 +1304,7 @@ def buildGAPIServiceObject(api, user, displayError=True):
         e = e.args[0]
       handleOAuthTokenError(e, True)
       if displayError:
-        entityServiceNotApplicableWarning(Ent.USER, user)
+        entityServiceNotApplicableWarning('User', user)
       return (user, None)
 
 DEFAULT_SKIP_OBJECTS = set(['kind', 'etag', 'etags'])
