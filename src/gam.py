@@ -730,10 +730,7 @@ def SetGlobalVariables(configFile, sectionName=None):
     if value and not os.path.isabs(value):
       value = os.path.expanduser(os.path.join(_getCfgDirectory(sectionName, GC.CONFIG_DIR), value))
     elif not value and itemName == GC.CACERTS_PEM:
-      if hasattr(sys, '_MEIPASS'):
-        value = os.path.join(sys._MEIPASS, GC.FN_CACERTS_PEM)
-      else:
-        value = os.path.join(GM.Globals[GM.GAM_PATH], GC.FN_CACERTS_PEM)
+      value = os.path.join(GM.Globals[GM.GAM_PATH], GC.FN_CACERTS_PEM)
     return value
 
   def _getCfgSection(sectionName, itemName):
@@ -1156,9 +1153,7 @@ def callGCP(service, function,
 def readDiscoveryFile(api_version):
   disc_filename = '{0}.json'.format(api_version)
   disc_file = os.path.join(GM.Globals[GM.GAM_PATH], disc_filename)
-  if hasattr(sys, '_MEIPASS'):
-    json_string = readFile(os.path.join(sys._MEIPASS, disc_filename), continueOnError=True, displayError=True)
-  elif os.path.isfile(disc_file):
+  if os.path.isfile(disc_file):
     json_string = readFile(disc_file, continueOnError=True, displayError=True)
   else:
     json_string = None
@@ -1370,7 +1365,7 @@ def CustomersGet(**kwargs):
         customerCreationTime = domainCreationTime
     customerInfo['customerCreationTime'] = customerCreationTime
     return (_cleanJSON(customerInfo, timeObjects=CUSTOMER_TIME_OBJECTS), True)
-  except (GAPI.badRequest, GAPI.domainNotFound, GAPI.notFound, GAPI.resourceNotFound, GAPI.forbidden) as e:
+  except (GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden, GAPI.domainNotFound, GAPI.notFound) as e:
     return (str(e), False)
 
 DOMAIN_TIME_OBJECTS = set(['creationTime'])
@@ -1391,17 +1386,38 @@ def DomainsGet(**kwargs):
   except (GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
+def GroupsDelete(**kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.groups(), 'delete',
+                      throw_reasons=[GAPI.GROUP_NOT_FOUND, GAPI.DOMAIN_NOT_FOUND, GAPI.DOMAIN_CANNOT_USE_APIS, GAPI.FORBIDDEN, GAPI.INVALID],
+                      **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden,
+          GAPI.invalid) as e:
+    return (str(e), False)
+
 def GroupsGet(**kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.groups(), 'get',
-                      throw_reasons=GAPI.GROUP_GET_THROW_REASONS, retry_reasons=GAPI.GROUP_GET_RETRY_REASONS,
+                      throw_reasons=GAPI.GROUP_GET_THROW_REASONS,
+                      retry_reasons=GAPI.GROUP_GET_RETRY_REASONS,
                       **kwargs)
     return (_cleanJSON(result), True)
-  except (GAPI.notFound,
-          GAPI.domainNotFound, GAPI.domainCannotUseApis,
-          GAPI.forbidden, GAPI.badRequest,
-          GAPI.invalid, GAPI.systemError) as e:
+  except (GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden,
+          GAPI.badRequest, GAPI.invalid, GAPI.systemError) as e:
+    return (str(e), False)
+
+def GroupsInsert(**kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.groups(), 'insert',
+                      throw_reasons=GAPI.GROUP_CREATE_THROW_REASONS,
+                      **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.duplicate, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden,
+          GAPI.invalid, GAPI.invalidInput) as e:
     return (str(e), False)
 
 def GroupsList(**kwargs):
@@ -1418,19 +1434,60 @@ def GroupsList(**kwargs):
                            **kwargs)
     return (_cleanJSON(result), True)
   except (GAPI.invalidMember, GAPI.resourceNotFound,
-          GAPI.domainNotFound, GAPI.domainCannotUseApis,
-          GAPI.forbidden, GAPI.badRequest,
-          GAPI.invalidInput, GAPI.invalidParameter) as e:
+          GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden,
+          GAPI.badRequest, GAPI.invalidInput, GAPI.invalidParameter) as e:
+    return (str(e), False)
+
+def GroupsUpdate(**kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.groups(), 'update',
+                      throw_reasons=GAPI.GROUP_UPDATE_THROW_REASONS,
+                      retry_reasons=GAPI.GROUP_GET_RETRY_REASONS,
+                      **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden,
+          GAPI.invalid, GAPI.invalidInput) as e:
+    return (str(e), False)
+
+def MembersDelete(**kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.members(), 'delete',
+                      throw_reasons=GAPI.MEMBERS_THROW_REASONS+[GAPI.MEMBER_NOT_FOUND, GAPI.INVALID_MEMBER,
+                                                                GAPI.CONDITION_NOT_MET, GAPI.CONFLICT],
+                      retry_reasons=GAPI.MEMBERS_RETRY_REASONS,
+                      **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden,
+          GAPI.memberNotFound, GAPI.invalidMember, GAPI.conditionNotMet, GAPI.conflict) as e:
     return (str(e), False)
 
 def MembersGet(**kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.members(), 'get',
-                      throw_reasons=GAPI.MEMBERS_THROW_REASONS+[GAPI.MEMBER_NOT_FOUND], retry_reasons=GAPI.MEMBERS_RETRY_REASONS,
+                      throw_reasons=GAPI.MEMBERS_THROW_REASONS+[GAPI.MEMBER_NOT_FOUND],
+                      retry_reasons=GAPI.MEMBERS_RETRY_REASONS,
                       **kwargs)
     return (_cleanJSON(result), True)
-  except (GAPI.groupNotFound, GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden) as e:
+  except (GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden,
+          GAPI.memberNotFound) as e:
+    return (str(e), False)
+
+def MembersInsert(**kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.members(), 'insert',
+                      throw_reasons=GAPI.MEMBERS_THROW_REASONS+[GAPI.DUPLICATE, GAPI.MEMBER_NOT_FOUND, GAPI.RESOURCE_NOT_FOUND,
+                                                                GAPI.INVALID_MEMBER, GAPI.CYCLIC_MEMBERSHIPS_NOT_ALLOWED,
+                                                                GAPI.CONDITION_NOT_MET, GAPI.CONFLICT],
+                      retry_reasons=GAPI.MEMBERS_RETRY_REASONS,
+                      **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden,
+          GAPI.duplicate, GAPI.memberNotFound, GAPI.resourceNotFound,
+          GAPI.invalidMember, GAPI.cyclicMembershipsNotAllowed, GAPI.conditionNotMet, GAPI.conflict) as e:
     return (str(e), False)
 
 def MembersList(**kwargs):
@@ -1438,10 +1495,24 @@ def MembersList(**kwargs):
   kwargs['fields'] = 'nextPageToken,members({0})'.format(kwargs.get('fields', 'email'))
   try:
     result = callGAPIpages(cd.members(), 'list', 'members',
-                           throw_reasons=GAPI.MEMBERS_THROW_REASONS, retry_reasons=GAPI.MEMBERS_RETRY_REASONS,
+                           throw_reasons=GAPI.MEMBERS_THROW_REASONS,
+                           retry_reasons=GAPI.MEMBERS_RETRY_REASONS,
                            **kwargs)
     return (_cleanJSON(result), True)
-  except (GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden) as e:
+  except (GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis,
+          GAPI.invalid, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def MembersPatch(**kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.members(), 'patch',
+                      throw_reasons=GAPI.MEMBERS_THROW_REASONS+[GAPI.MEMBER_NOT_FOUND, GAPI.INVALID_MEMBER],
+                      retry_reasons=GAPI.MEMBERS_RETRY_REASONS,
+                      **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden,
+          GAPI.memberNotFound, GAPI.invalidMember) as e:
     return (str(e), False)
 
 def OrgunitsGet(**kwargs):
@@ -1472,6 +1543,16 @@ def OrgunitsList(**kwargs):
   except (GAPI.orgunitNotFound, GAPI.badRequest, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
+def UsersDelete(**kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.users(), 'delete',
+                      throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.DOMAIN_NOT_FOUND, GAPI.DOMAIN_CANNOT_USE_APIS, GAPI.FORBIDDEN],
+                      **kwargs)
+    return (_cleanJSON(result, skipObjects=USER_SKIP_OBJECTS, timeObjects=USER_TIME_OBJECTS), True)
+  except (GAPI.userNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden) as e:
+    return (str(e), False)
+
 USER_SKIP_OBJECTS = set(['thumbnailPhotoEtag'])
 USER_TIME_OBJECTS = set(['creationTime', 'deletionTime', 'lastLoginTime'])
 
@@ -1482,8 +1563,22 @@ def UsersGet(**kwargs):
                       throw_reasons=GAPI.USER_GET_THROW_REASONS+[GAPI.INVALID_INPUT],
                       **kwargs)
     return (_cleanJSON(result, skipObjects=USER_SKIP_OBJECTS, timeObjects=USER_TIME_OBJECTS), True)
-  except (GAPI.userNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis,
-          GAPI.badRequest, GAPI.forbidden, GAPI.systemError) as e:
+  except (GAPI.userNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden,
+          GAPI.badRequest, GAPI.invalidInput, GAPI.systemError) as e:
+    return (str(e), False)
+
+def UsersInsert(**kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.users(), 'insert',
+                      throw_reasons=[GAPI.DUPLICATE, GAPI.DOMAIN_NOT_FOUND, GAPI.DOMAIN_CANNOT_USE_APIS, GAPI.FORBIDDEN,
+                                     GAPI.INVALID, GAPI.INVALID_INPUT, GAPI.INVALID_PARAMETER,
+                                     GAPI.INVALID_ORGUNIT, GAPI.INVALID_SCHEMA_VALUE],
+                      **kwargs)
+    return (_cleanJSON(result, skipObjects=USER_SKIP_OBJECTS, timeObjects=USER_TIME_OBJECTS), True)
+  except (GAPI.duplicate, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden,
+          GAPI.invalid, GAPI.invalidInput, GAPI.invalidParameter,
+          GAPI.invalidOrgunit, GAPI.invalidSchemaValue) as e:
     return (str(e), False)
 
 def UsersList(**kwargs):
@@ -1493,10 +1588,26 @@ def UsersList(**kwargs):
   kwargs['fields'] = 'nextPageToken,users({0})'.format(kwargs.get('fields', 'primaryEmail'))
   try:
     result = callGAPIpages(cd.users(), 'list', 'users',
-                           throw_reasons=[GAPI.DOMAIN_NOT_FOUND, GAPI.INVALID_ORGUNIT, GAPI.INVALID_INPUT,
-                                          GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                           throw_reasons=[GAPI.DOMAIN_NOT_FOUND, GAPI.DOMAIN_CANNOT_USE_APIS, GAPI.FORBIDDEN,
+                                          GAPI.INVALID_ORGUNIT, GAPI.INVALID_INPUT,
+                                          GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND],
                            **kwargs)
     return (_cleanJSON(result, skipObjects=USER_SKIP_OBJECTS, timeObjects=USER_TIME_OBJECTS), True)
-  except (GAPI.domainNotFound, GAPI.invalidOrgunit, GAPI.invalidInput,
-          GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+  except (GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden,
+          GAPI.invalidOrgunit, GAPI.invalidInput,
+          GAPI.badRequest, GAPI.resourceNotFound) as e:
+    return (str(e), False)
+
+def UsersUpdate(**kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.users(), 'update',
+                      throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.DOMAIN_NOT_FOUND, GAPI.FORBIDDEN,
+                                     GAPI.INVALID, GAPI.INVALID_INPUT, GAPI.INVALID_PARAMETER,
+                                     GAPI.INVALID_ORGUNIT, GAPI.INVALID_SCHEMA_VALUE],
+                      **kwargs)
+    return (_cleanJSON(result, skipObjects=USER_SKIP_OBJECTS, timeObjects=USER_TIME_OBJECTS), True)
+  except (GAPI.userNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden,
+          GAPI.invalid, GAPI.invalidInput, GAPI.invalidParameter,
+          GAPI.invalidOrgunit, GAPI.invalidSchemaValue) as e:
     return (str(e), False)
