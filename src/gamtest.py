@@ -43,6 +43,11 @@ print('\nDomainAliasesList')
 result, status = gam.DomainAliasesList(customer)
 print(status, result)
 
+# ASPS
+print('\nASPSList')
+result, status = gam.ASPsList(TESTUSER)
+print(status, result)
+
 # Chromeos Devices
 print('\nChromeosdevicesGet')
 result, status = gam.ChromeosdevicesGet(customer, deviceId=CHROMEOS_DEVICEID, fields='deviceId,orgUnitPath')
@@ -99,6 +104,21 @@ print('\nOrgunitsDelete')
 result, status = gam.OrgunitsDelete(customer, TESTOUPARENT+'/'+TESTOU)
 print(status, result)
 
+# Privileges
+print('\nPrivilegesList')
+result, status = gam.PrivilegesList(customer)
+print(status, result)
+
+# Roles
+print('\nRolesList')
+result, status = gam.RolesList(customer)
+print(status, result)
+
+# Role Assignments
+print('\nRoleAssignmentsList')
+result, status = gam.RoleAssignmentsList(customer, TESTUSER)
+print(status, result)
+
 # Schemas
 print('\nSchemasInsert')
 result, status = gam.SchemasInsert(customer, body={'schemaName': TESTSCHEMA, 'displayName': TESTSCHEMA+' Display',
@@ -121,6 +141,11 @@ print('\nUsersGet')
 result, status = gam.UsersGet(TESTUSER, fields='*')
 print(status, result)
 
+# Tokens
+print('\nTokensList')
+result, status = gam.TokensList(TESTUSER)
+print(status, result)
+
 # Users
 print('\nUsersList')
 result, status = gam.UsersList(customer=customer, query='orgUnitPath:/Test', fields='primaryEmail,includeInGlobalAddressList,suspended')
@@ -135,16 +160,6 @@ result, status = gam.UsersAliasesList(TESTUSER, fields='*')
 print(status, result)
 print('\nUsersAliasesDelete')
 result, status = gam.UsersAliasesDelete(TESTUSER, TESTUSER_ALIAS)
-print(status, result)
-
-# ASPS
-print('\nASPSList')
-result, status = gam.ASPsList(TESTUSER)
-print(status, result)
-
-# Tokens
-print('\nTokensList')
-result, status = gam.TokensList(TESTUSER)
 print(status, result)
 
 # Verification Codes
