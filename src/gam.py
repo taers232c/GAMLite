@@ -1963,6 +1963,17 @@ def OrgunitsUpdate(customerId, orgUnitPath, **kwargs):
           GAPI.badRequest, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
+def PrivilegesList(customer, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  fields = 'nextPageToken,items({0})'.format(kwargs.pop('fields', 'serviceId,serviceName,privilegeName,isOuScopable,childPrivileges'))
+  try:
+    result = callGAPIpages(cd.privileges(), 'list', 'items',
+                           throw_reasons=[GAPI.BAD_REQUEST, GAPI.CUSTOMER_NOT_FOUND, GAPI.FORBIDDEN],
+                           customer=customer, fields=fields)
+    return (_cleanJSON(result), True)
+  except (GAPI.badRequest, GAPI.customerNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
 def ResourcesCalendarsDelete(customer, calendarResourceId):
   cd = buildGAPIObject(API.DIRECTORY)
   try:
@@ -2136,6 +2147,17 @@ def ResourcesFeaturesRename(customer, oldName, newName):
     return ({}, True)
   except (GAPI.duplicate, GAPI.resourceNotFound, GAPI.invalidInput,
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def RolesList(customer, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  fields = 'nextPageToken,items({0})'.format(kwargs.pop('fields', 'roleAssignmentId,roleId,assignedTo,scopeType,orgUnitId'))
+  try:
+    result = callGAPIpages(cd.roles(), 'list', 'items',
+                           throw_reasons=[GAPI.BAD_REQUEST, GAPI.CUSTOMER_NOT_FOUND, GAPI.FORBIDDEN],
+                           customer=customer, fields=fields)
+    return (_cleanJSON(result), True)
+  except (GAPI.badRequest, GAPI.customerNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
 def SchemasDelete(customerId, schemaKey):
