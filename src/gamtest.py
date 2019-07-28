@@ -14,6 +14,7 @@ TESTUSER = 'testuser1@rdschool.org'
 TESTUSERALIAS = 'testuser1alias@rdschool.org'
 
 gam.SetGlobalVariables(GAMCFG)
+print(gam.Version())
 print('\nCustomersGet')
 result, status = gam.CustomersGet(None)
 print(status, result)

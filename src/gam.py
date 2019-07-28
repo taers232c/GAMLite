@@ -22,7 +22,7 @@ For more information, see https://github.com/taers232c/GAMLite
 """
 
 __author__ = 'Ross Scroggs <ross.scroggs@gmail.com>'
-__version__ = '4.89.07'
+__version__ = '1.00.00'
 __license__ = 'Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)'
 
 import codecs
@@ -1331,11 +1331,11 @@ def _cleanJSON(topStructure, listLimit=None, skipObjects=None, timeObjects=None)
   return _clean(topStructure, '')
 
 def Version():
-  version_data = 'GAM {0} - {1}\n{2}\nPython {3}.{4}.{5} {6}-bit {7}\ngoogle-api-python-client {8}\nhttplib2 {9}\noauth2client {10}\n{11} {12}\nPath: {13}\n'
+  version_data = 'GAMLite {0} - {1}\n{2}\nPython {3}.{4}.{5} {6}-bit {7}\ngoogle-api-python-client {8}\nhttplib2 {9}\noauth2client {10}\n{11} {12}\nPath: {13}\n'
   return version_data.format(__version__, GAM_URL, __author__, sys.version_info[0],
                              sys.version_info[1], sys.version_info[2], struct.calcsize('P')*8,
                              sys.version_info[3], googleapiclient.__version__, httplib2.__version__, oauth2client.__version__,
-                             platform.platform(), platform.machine(), GM.Globals[GM.GAM_PATH]), True
+                             platform.platform(), platform.machine(), GM.Globals[GM.GAM_PATH])
 
 def ChromeosdevicesAction(customerId, resourceId, **kwargs):
   if not customerId:
