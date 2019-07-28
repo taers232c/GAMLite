@@ -5,6 +5,8 @@
 import gam
 #GAMCFG = '/Library/Application Support/GAM/gam.cfg'
 GAMCFG = '/Users/Ross/.gam/gam.cfg'
+CHROMEOSDEVICEID = '32c61153-3808-463b-ba0a-100376212222'
+DOMAINNAME = 'rdschool.org'
 TESTGROUP = 'testgroup1@rdschool.org'
 TESTGROUPALIAS = 'testgroup1alias@rdschool.org'
 TESTOU = 'Fribble'
@@ -15,14 +17,22 @@ TESTUSERALIAS = 'testuser1alias@rdschool.org'
 
 gam.SetGlobalVariables(GAMCFG)
 print(gam.Version())
+print('\nChromeosdevicesGet')
+result, status = gam.ChromeosdevicesGet(None, deviceId=CHROMEOSDEVICEID, fields='deviceId,orgUnitPath')
+print(status, result)
+print('\nChromeosdevicesList')
+result, status = gam.ChromeosdevicesList(None, fields='deviceId,orgUnitPath')
 print('\nCustomersGet')
 result, status = gam.CustomersGet(None)
 print(status, result)
 print('\nDomainsGet')
-result, status = gam.DomainsGet(None, None)
+result, status = gam.DomainsGet(None, DOMAINNAME)
 print(status, result)
 print('\nDomainsList')
 result, status = gam.DomainsList(None)
+print(status, result)
+print('\nDomainAliasesList')
+result, status = gam.DomainAliasesList(None)
 print(status, result)
 print('\nGroupsGet')
 result, status = gam.GroupsGet(groupKey=TESTGROUP, fields='*')
@@ -44,6 +54,9 @@ result, status = gam.MembersGet(TESTGROUP, TESTUSER, fields='*')
 print(status, result)
 print('\nMembersList')
 result, status = gam.MembersList(TESTGROUP, fields='email,id,role,status,type,delivery_settings')
+print(status, result)
+print('\nMobiledevicesList')
+result, status = gam.MobiledevicesList(None, fields='resourceId,name')
 print(status, result)
 print('\nOrgunitsInsert')
 result, status = gam.OrgunitsInsert(None, body={'name': TESTOU, 'parentOrgUnitPath': TESTOUPARENT})
@@ -72,7 +85,7 @@ result, status = gam.SchemasUpdate(None, TESTSCHEMA, body={'schemaName': TESTSCH
                                                            'fields': [{'fieldName': 'IntField', 'displayName': 'IntField Display', 'fieldType': 'INT64'}]})
 print(status, result)
 print('\nSchemasList')
-result, status = gam.SchemasList(None,)
+result, status = gam.SchemasList(None)
 print(status, result)
 print('\nSchemasDelete')
 result, status = gam.SchemasDelete(None, TESTSCHEMA)
