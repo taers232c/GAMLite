@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# GAMWRAPPER
+# GAMLite
 #
 # Copyright 2019, All Rights Reserved.
 #
@@ -16,9 +16,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""GAMWRAPPER is aA API tool which allows Administrators to control their G Suite domain and accounts.
+"""GAMLite is an API wrapper which allows Administrators to control their G Suite domain and accounts.
 
-For more information, see https://github.com/taers232c/GAMWRAPPER
+For more information, see https://github.com/taers232c/GAMLite
 """
 
 __author__ = 'Ross Scroggs <ross.scroggs@gmail.com>'
@@ -1808,6 +1808,67 @@ def OrgunitsUpdate(customerId, orgUnitPath, **kwargs):
     return (_cleanJSON(result), True)
   except (GAPI.invalidOrgunit, GAPI.orgunitNotFound, GAPI.backendError, GAPI.invalidOrgunitName,
           GAPI.badRequest, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
+    return (str(e), False)
+
+def SchemasDelete(customerId, schemaKey):
+  cd = buildGAPIObject(API.DIRECTORY)
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  try:
+    callGAPI(cd.schemas(), 'delete',
+             throw_reasons=[GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+             customerId=customerId, schemaKey=schemaKey)
+    return ({}, True)
+  except (GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def SchemasGet(customerId, schemaKey, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  try:
+    result = callGAPI(cd.schemas(), 'get',
+                      throw_reasons=[GAPI.INVALID, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customerId=customerId, schemaKey=schemaKey, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.invalid, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def SchemasInsert(customerId, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  try:
+    result = callGAPI(cd.schemas(), 'insert',
+                      throw_reasons=[GAPI.DUPLICATE, GAPI.CONDITION_NOT_MET, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customerId=customerId, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.duplicate, GAPI.conditionNotMet, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def SchemasList(customerId, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  kwargs['fields'] = 'schemas({0})'.format(kwargs.get('fields', 'schemaId,schemaName,displayName,fields'))
+  try:
+    result = callGAPIpages(cd.schemas(), 'list', 'schemas',
+                           throw_reasons=[GAPI.ORGUNIT_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.INVALID_CUSTOMER_ID, GAPI.LOGIN_REQUIRED],
+                           customerId=customerId, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.orgunitNotFound, GAPI.badRequest, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
+    return (str(e), False)
+
+def SchemasUpdate(customerId, schemaKey, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  try:
+    result = callGAPI(cd.schemas(), 'update',
+                      throw_reasons=[GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customerId=customerId, schemaKey=schemaKey, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
 def UsersDelete(userKey, **kwargs):

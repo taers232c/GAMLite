@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
+"""Test GAMLite
+"""
 
 import gam
 #GAMCFG = '/Library/Application Support/GAM/gam.cfg'
 GAMCFG = '/Users/Ross/.gam/gam.cfg'
-TESTUSER = 'testuser1@rdschool.org'
-TESTUSERALIAS = 'testuser1alias@rdschool.org'
 TESTGROUP = 'testgroup1@rdschool.org'
 TESTGROUPALIAS = 'testgroup1alias@rdschool.org'
+TESTOU = 'Fribble'
+TESTOUPARENT = '/Test'
+TESTSCHEMA = 'TestSchema'
+TESTUSER = 'testuser1@rdschool.org'
+TESTUSERALIAS = 'testuser1alias@rdschool.org'
 
 gam.SetGlobalVariables(GAMCFG)
 print('\nCustomersGet')
@@ -40,19 +45,36 @@ print('\nMembersList')
 result, status = gam.MembersList(TESTGROUP, fields='email,id,role,status,type,delivery_settings')
 print(status, result)
 print('\nOrgunitsInsert')
-result, status = gam.OrgunitsInsert(None, body={'name': 'Fribble', 'parentOrgUnitPath': '/Test'})
+result, status = gam.OrgunitsInsert(None, body={'name': TESTOU, 'parentOrgUnitPath': TESTOUPARENT})
 print(status, result)
 print('\nOrgunitsGet')
-result, status = gam.OrgunitsGet(None, '/Test/Fribble')
+result, status = gam.OrgunitsGet(None, TESTOUPARENT+'/'+TESTOU)
 print(status, result)
 print('\nOrgunitsUpdate')
-result, status = gam.OrgunitsUpdate(None, '/Test/Fribble', body={'description': 'Fribble'})
+result, status = gam.OrgunitsUpdate(None, TESTOUPARENT+'/'+TESTOU, body={'description': 'Fribble'})
 print(status, result)
 print('\nOrgunitsList')
 result, status = gam.OrgunitsList(None)
 print(status, result)
 print('\nOrgunitsDelete')
-result, status = gam.OrgunitsDelete(None, '/Test/Fribble')
+result, status = gam.OrgunitsDelete(None, TESTOUPARENT+'/'+TESTOU)
+print(status, result)
+print('\nSchemasInsert')
+result, status = gam.SchemasInsert(None, body={'schemaName': TESTSCHEMA, 'displayName': TESTSCHEMA+' Display',
+                                               'fields': [{'fieldName': 'BoolField', 'displayName': 'BoolField Display', 'fieldType': 'BOOL'}]})
+print(status, result)
+print('\nSchemasGet')
+result, status = gam.SchemasGet(None, TESTSCHEMA)
+print(status, result)
+print('\nSchemasUpdate')
+result, status = gam.SchemasUpdate(None, TESTSCHEMA, body={'schemaName': TESTSCHEMA,
+                                                           'fields': [{'fieldName': 'IntField', 'displayName': 'IntField Display', 'fieldType': 'INT64'}]})
+print(status, result)
+print('\nSchemasList')
+result, status = gam.SchemasList(None,)
+print(status, result)
+print('\nSchemasDelete')
+result, status = gam.SchemasDelete(None, TESTSCHEMA)
 print(status, result)
 print('\nUsersGet')
 result, status = gam.UsersGet(TESTUSER, fields='*')
