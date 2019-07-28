@@ -1337,6 +1337,74 @@ def Version():
                              sys.version_info[3], googleapiclient.__version__, httplib2.__version__, oauth2client.__version__,
                              platform.platform(), platform.machine(), GM.Globals[GM.GAM_PATH]), True
 
+def ChromeosdevicesAction(customerId, resourceId, **kwargs):
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.chromeosdevices(), 'action',
+             throw_reasons=[GAPI.INVALID, GAPI.CONDITION_NOT_MET,
+                            GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+             customerId=customerId, resourceId=resourceId, **kwargs)
+    return ({}, True)
+  except (GAPI.invalid, GAPI.conditionNotMet,
+          GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+CROS_TIME_OBJECTS = set(['lastSync', 'lastEnrollmentTime', 'supportEndDate', 'reportTime'])
+
+def ChromeosdevicesGet(customerId, deviceId, **kwargs):
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.chromeosdevices(), 'get',
+                      throw_reasons=[GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customerId=customerId, deviceId=deviceId, **kwargs)
+    return (_cleanJSON(result, timeObjects=CROS_TIME_OBJECTS), True)
+  except (GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ChromeosdevicesList(customerId, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  kwargs['fields'] = 'nextPageToken,chromeosdevices({0})'.format(kwargs.get('fields', 'deviceId'))
+  try:
+    result = callGAPIpages(cd.chromeosdevices(), 'list', 'chromeosdevices',
+                           throw_reasons=[GAPI.INVALID_INPUT, GAPI.INVALID_ORGUNIT, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                           customerId=customerId, **kwargs)
+    return (_cleanJSON(result, timeObjects=CROS_TIME_OBJECTS), True)
+  except (GAPI.invalidInput, GAPI.invalidOrgunit,
+          GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ChromeosdevicesMoveDevicesToOu(customerId, orgUnitPath, deviceIds):
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.chromeosdevices(), 'moveDevicesToOu',
+             throw_reasons=[GAPI.INVALID_ORGUNIT, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+             customerId=customerId, orgUnitPath=makeOrgUnitPathAbsolute(orgUnitPath), body={'deviceIds': deviceIds})
+    return ({}, True)
+  except (GAPI.invalidOrgunit, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ChromeosdevicesUpdate(customerId, deviceId, **kwargs):
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.chromeosdevices(), 'update',
+                      throw_reasons=[GAPI.INVALID, GAPI.CONDITION_NOT_MET,
+                                     GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customerId=customerId, deviceId=deviceId, **kwargs)
+    return (_cleanJSON(result, timeObjects=CROS_TIME_OBJECTS), True)
+  except (GAPI.invalid, GAPI.conditionNotMet,
+          GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
 CUSTOMER_TIME_OBJECTS = ['customerCreationTime']
 
 def CustomersGet(customerKey, **kwargs):
@@ -1344,16 +1412,16 @@ def CustomersGet(customerKey, **kwargs):
     customerKey = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
-    customerInfo = callGAPI(cd.customers(), 'get',
-                            throw_reasons=[GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
-                            customerKey=customerKey, **kwargs)
-    customerInfo['verified'] = callGAPI(cd.domains(), 'get',
-                                        throw_reasons=[GAPI.DOMAIN_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
-                                        customer=customerInfo['id'], domainName=customerInfo['customerDomain'], fields='verified')['verified']
+    result = callGAPI(cd.customers(), 'get',
+                      throw_reasons=[GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customerKey=customerKey, **kwargs)
+    result['verified'] = callGAPI(cd.domains(), 'get',
+                                  throw_reasons=[GAPI.DOMAIN_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+                                  customer=result['id'], domainName=result['customerDomain'], fields='verified')['verified']
     # From Jay Lee
     # If customer has changed primary domain, customerCreationTime is date of current primary being added, not customer create date.
     # We should get all domains and use oldest date
-    customerCreationTime = formatLocalTime(customerInfo['customerCreationTime'])
+    customerCreationTime = formatLocalTime(result['customerCreationTime'])
     domains = callGAPIitems(cd.domains(), 'list', 'domains',
                             throw_reasons=[GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
                             customer=customerKey, fields='domains(creationTime)')
@@ -1361,9 +1429,23 @@ def CustomersGet(customerKey, **kwargs):
       domainCreationTime = formatLocalTimestamp(domain['creationTime'])
       if domainCreationTime < customerCreationTime:
         customerCreationTime = domainCreationTime
-    customerInfo['customerCreationTime'] = customerCreationTime
-    return (_cleanJSON(customerInfo, timeObjects=CUSTOMER_TIME_OBJECTS), True)
+    result['customerCreationTime'] = customerCreationTime
+    return (_cleanJSON(result, timeObjects=CUSTOMER_TIME_OBJECTS), True)
   except (GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden, GAPI.domainNotFound, GAPI.notFound) as e:
+    return (str(e), False)
+
+def CustomersPatch(customerKey, **kwargs):
+  if not customerKey:
+    customerKey = GC.Values[GC.CUSTOMER_ID]
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.customers(), 'patch',
+                      throw_reasons=[GAPI.DOMAIN_NOT_VERIFIED_SECONDARY, GAPI.INVALID, GAPI.INVALID_INPUT,
+                                     GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customerKey=customerKey, **kwargs)
+    return (_cleanJSON(result, timeObjects=CUSTOMER_TIME_OBJECTS), True)
+  except (GAPI.domainNotVerifiedSecondary, GAPI.invalid, GAPI.invalidInput,
+          GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
 DOMAIN_TIME_OBJECTS = set(['creationTime'])
@@ -1529,6 +1611,58 @@ def MembersPatch(groupKey, memberKey, **kwargs):
     return (_cleanJSON(result), True)
   except (GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden,
           GAPI.memberNotFound, GAPI.invalidMember) as e:
+    return (str(e), False)
+
+def MobiledevicesAction(customerId, resourceId, **kwargs):
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.mobiledevices(), 'action',
+             bailOnInternalError=True, throw_reasons=[GAPI.INTERNAL_ERROR, GAPI.RESOURCE_ID_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+             customerId=customerId, resourceId=resourceId, **kwargs)
+    return ({}, True)
+  except (GAPI.internalError, GAPI.resourceIdNotFound, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def MobiledevicesDelete(customerId, resourceid):
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.mobiledevices(), 'delete',
+             bailOnInternalError=True, throw_reasons=[GAPI.INTERNAL_ERROR, GAPI.RESOURCE_ID_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+             customerId=customerId, resourceid=resourceid)
+    return ({}, True)
+  except (GAPI.internalError, GAPI.resourceIdNotFound, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+MOBILE_TIME_OBJECTS = set(['firstSync', 'lastSync'])
+
+def MobiledevicesGet(customerId, resourceid, **kwargs):
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.mobiledevices(), 'get',
+                      throw_reasons=[GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customerId=customerId, resourceid=resourceid, **kwargs)
+    return (_cleanJSON(result, timeObjects=MOBILE_TIME_OBJECTS), True)
+  except (GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def MobiledevicesList(customerId, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  if not customerId:
+    customerId = GC.Values[GC.CUSTOMER_ID]
+  kwargs['fields'] = 'nextPageToken,mobiledevices({0})'.format(kwargs.get('fields', 'resourceid'))
+  try:
+    result = callGAPIpages(cd.mobiledevices(), 'list', 'mobiledevices',
+                           throw_reasons=[GAPI.INVALID_INPUT, GAPI.INVALID_ORGUNIT, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                           customerId=customerId, **kwargs)
+    return (_cleanJSON(result, timeObjects=MOBILE_TIME_OBJECTS), True)
+  except (GAPI.invalidInput, GAPI.invalidOrgunit,
+          GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
 def _getTopLevelOrgId(cd, customerId, parentOrgUnitPath):
