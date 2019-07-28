@@ -1548,6 +1548,47 @@ def GroupsUpdate(groupKey, **kwargs):
           GAPI.invalid, GAPI.invalidInput) as e:
     return (str(e), False)
 
+def GroupsAliasesDelete(groupKey, alias):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.groups().aliases(), 'delete',
+             throw_reasons=[GAPI.GROUP_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.INVALID, GAPI.FORBIDDEN,
+                            GAPI.INVALID_RESOURCE, GAPI.CONDITION_NOT_MET],
+             groupKey=groupKey, alias=alias)
+    return ({}, True)
+  except (GAPI.groupNotFound, GAPI.badRequest, GAPI.invalid, GAPI.forbidden,
+          GAPI.invalidResource, GAPI.conditionNotMet) as e:
+    return (str(e), False)
+
+def GroupsAliasesInsert(groupKey, alias, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.groups().aliases(), 'insert',
+                      throw_reasons=[GAPI.GROUP_NOT_FOUND, GAPI.BAD_REQUEST,
+                                     GAPI.INVALID, GAPI.INVALID_INPUT, GAPI.FORBIDDEN, GAPI.DUPLICATE,
+                                     GAPI.CONDITION_NOT_MET, GAPI.LIMIT_EXCEEDED],
+                      groupKey=groupKey, body={'alias': alias}, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.groupNotFound, GAPI.badRequest,
+          GAPI.invalid, GAPI.invalidInput, GAPI.forbidden, GAPI.duplicate,
+          GAPI.conditionNotMet, GAPI.limitExceeded) as e:
+    return (str(e), False)
+
+def GroupsAliasesList(groupKey, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  kwargs['fields'] = 'aliases({0})'.format(kwargs.get('fields', 'alias'))
+  try:
+    result = callGAPIpages(cd.groups().aliases(), 'list', 'aliases',
+                           throw_reasons=[GAPI.GROUP_NOT_FOUND, GAPI.BAD_REQUEST,
+                                          GAPI.INVALID, GAPI.INVALID_RESOURCE, GAPI.FORBIDDEN,
+                                          GAPI.CONDITION_NOT_MET],
+                           groupKey=groupKey, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.groupNotFound, GAPI.badRequest,
+          GAPI.invalid, GAPI.invalidResource, GAPI.forbidden,
+          GAPI.conditionNotMet) as e:
+    return (str(e), False)
+
 def MembersDelete(groupKey, memberKey, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
   try:
@@ -1836,4 +1877,45 @@ def UsersUpdate(userKey, **kwargs):
   except (GAPI.userNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden,
           GAPI.invalid, GAPI.invalidInput, GAPI.invalidParameter,
           GAPI.invalidOrgunit, GAPI.invalidSchemaValue) as e:
+    return (str(e), False)
+
+def UsersAliasesDelete(userKey, alias):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.users().aliases(), 'delete',
+             throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.INVALID, GAPI.FORBIDDEN,
+                            GAPI.INVALID_RESOURCE, GAPI.CONDITION_NOT_MET],
+             userKey=userKey, alias=alias)
+    return ({}, True)
+  except (GAPI.userNotFound, GAPI.badRequest, GAPI.invalid, GAPI.forbidden,
+          GAPI.invalidResource, GAPI.conditionNotMet) as e:
+    return (str(e), False)
+
+def UsersAliasesInsert(userKey, alias, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.users().aliases(), 'insert',
+                      throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.BAD_REQUEST,
+                                     GAPI.INVALID, GAPI.INVALID_INPUT, GAPI.FORBIDDEN, GAPI.DUPLICATE,
+                                     GAPI.CONDITION_NOT_MET, GAPI.LIMIT_EXCEEDED],
+                      userKey=userKey, body={'alias': alias}, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.userNotFound, GAPI.badRequest,
+          GAPI.invalid, GAPI.invalidInput, GAPI.forbidden, GAPI.duplicate,
+          GAPI.conditionNotMet, GAPI.limitExceeded) as e:
+    return (str(e), False)
+
+def UsersAliasesList(userKey, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  kwargs['fields'] = 'aliases({0})'.format(kwargs.get('fields', 'email'))
+  try:
+    result = callGAPIpages(cd.users().aliases(), 'list', 'aliases',
+                           throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.BAD_REQUEST,
+                                          GAPI.INVALID, GAPI.INVALID_RESOURCE, GAPI.FORBIDDEN,
+                                          GAPI.CONDITION_NOT_MET],
+                           userKey=userKey, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.userNotFound, GAPI.badRequest,
+          GAPI.invalid, GAPI.invalidResource, GAPI.forbidden,
+          GAPI.conditionNotMet) as e:
     return (str(e), False)
