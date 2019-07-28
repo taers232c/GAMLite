@@ -1940,6 +1940,181 @@ def OrgunitsUpdate(customerId, orgUnitPath, **kwargs):
           GAPI.badRequest, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
+def ResourcesCalendarsDelete(customer, calendarResourceId):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.resources().calendars(), 'delete',
+             throw_reasons=[GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+             customer=customer, calendarResourceId=calendarResourceId)
+    return ({}, True)
+  except (GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesCalendarsGet(customer, calendarResourceId, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.resources().calendars(), 'get',
+                      throw_reasons=[GAPI.INVALID_PARAMETER, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customer=customer, calendarResourceId=calendarResourceId, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.invalidParameter, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesCalendarsInsert(customer, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.resources().calendars(), 'insert',
+                      throw_reasons=[GAPI.INVALID, GAPI.INVALID_INPUT, GAPI.REQUIRED, GAPI.INVALID_PARAMETER, GAPI.DUPLICATE,
+                                     GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customer=customer, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.invalid, GAPI.invalidInput, GAPI.required, GAPI.invalidParameter, GAPI.duplicate,
+          GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesCalendarsList(customer, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  fields = 'nextPageToken,items({0})'.format(kwargs.pop('fields', 'resourceId,resourceName,resourceEmail,resourceDescription,resourceType'))
+  try:
+    result = callGAPIpages(cd.resources().calendars(), 'list', 'items',
+                           throw_reasons=[GAPI.INVALID_INPUT, GAPI.INVALID_PARAMETER,
+                                          GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                           customer=customer, fields=fields, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.invalidInput, GAPI.invalidParameter,
+          GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesCalendarsPatch(customer, calendarResourceId, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.resources().calendars(), 'patch',
+                      throw_reasons=[GAPI.INVALID, GAPI.INVALID_INPUT, GAPI.REQUIRED, GAPI.INVALID_PARAMETER,
+                                     GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
+                      customer=customer, calendarResourceId=calendarResourceId, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.invalid, GAPI.invalidInput, GAPI.required, GAPI.invalidParameter,
+          GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesBuildingsDelete(customer, buildingId):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.resources().buildings(), 'delete',
+             throw_reasons=[GAPI.RESOURCE_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+             customer=customer, buildingId=buildingId)
+    return ({}, True)
+  except (GAPI.resourceNotFound, GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesBuildingsGet(customer, buildingId, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.resources().buildings(), 'get',
+                      throw_reasons=[GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_PARAMETER,
+                                     GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+                      customer=customer, buildingId=buildingId, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.resourceNotFound, GAPI.invalidParameter,
+          GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesBuildingsInsert(customer, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.resources().buildings(), 'insert',
+                      throw_reasons=[GAPI.DUPLICATE, GAPI.INVALID_INPUT, GAPI.INVALID_PARAMETER,
+                                     GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+                      customer=customer, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.duplicate, GAPI.invalidInput, GAPI.invalidParameter,
+          GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesBuildingsList(customer, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  fields = 'nextPageToken,items({0})'.format(kwargs.pop('fields', 'resourceId,resourceName,resourceEmail,resourceDescription,resourceType'))
+  try:
+    result = callGAPIpages(cd.resources().buildings(), 'list', 'items',
+                           throw_reasons=[GAPI.INVALID_PARAMETER,
+                                          GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+                           customer=customer, fields=fields, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.invalidParameter,
+          GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesBuildingsPatch(customer, buildingId, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.resources().buildings(), 'patch',
+                      throw_reasons=[GAPI.DUPLICATE, GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_INPUT, GAPI.INVALID_PARAMETER,
+                                     GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+                      customer=customer, buildingId=buildingId, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.duplicate, GAPI.resourceNotFound, GAPI.invalidInput, GAPI.invalidParameter,
+          GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesFeaturesDelete(customer, featureKey):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.resources().features(), 'delete',
+             throw_reasons=[GAPI.RESOURCE_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+             customer=customer, featureKey=featureKey)
+    return ({}, True)
+  except (GAPI.resourceNotFound, GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesFeaturesGet(customer, featureKey, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.resources().features(), 'get',
+                      throw_reasons=[GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_PARAMETER,
+                                     GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+                      customer=customer, featureKey=featureKey, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.resourceNotFound, GAPI.invalidParameter,
+          GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesFeaturesInsert(customer, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    result = callGAPI(cd.resources().features(), 'insert',
+                      throw_reasons=[GAPI.DUPLICATE, GAPI.INVALID_INPUT, GAPI.INVALID_PARAMETER,
+                                     GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+                      customer=customer, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.duplicate, GAPI.invalidInput, GAPI.invalidParameter,
+          GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesFeaturesList(customer, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  fields = 'nextPageToken,items({0})'.format(kwargs.pop('fields', 'name'))
+  try:
+    result = callGAPIpages(cd.resources().features(), 'list', 'items',
+                           throw_reasons=[GAPI.INVALID_PARAMETER,
+                                          GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+                           customer=customer, fields=fields, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.invalidParameter,
+          GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def ResourcesFeaturesRename(customer, oldName, newName):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.resources().features(), 'rename',
+             throw_reasons=[GAPI.DUPLICATE, GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_INPUT,
+                            GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+             customer=customer, oldName=oldName, body={'newName': newName})
+    return ({}, True)
+  except (GAPI.duplicate, GAPI.resourceNotFound, GAPI.invalidInput,
+          GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
 def SchemasDelete(customerId, schemaKey):
   cd = buildGAPIObject(API.DIRECTORY)
   try:
