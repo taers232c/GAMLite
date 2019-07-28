@@ -136,3 +136,24 @@ print(status, result)
 print('\nUsersAliasesDelete')
 result, status = gam.UsersAliasesDelete(TESTUSER, TESTUSER_ALIAS)
 print(status, result)
+
+# ASPS
+print('\nASPSList')
+result, status = gam.ASPsList(TESTUSER)
+print(status, result)
+
+# Tokens
+print('\nTokensList')
+result, status = gam.TokensList(TESTUSER)
+print(status, result)
+
+# Verification Codes
+print('\nVerificationCodesGenerate')
+result, status = gam.VerificationCodesGenerate(TESTUSER)
+print(status, result)
+print('\nVerificationCodesList')
+result, status = gam.VerificationCodesList(TESTUSER)
+print(status, result)
+print('\nVerificationCodesInvalidate')
+result, status = gam.VerificationCodesInvalidate(TESTUSER)
+print(status, result)

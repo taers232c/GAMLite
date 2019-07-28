@@ -1429,6 +1429,29 @@ def Version():
                              sys.version_info[3], googleapiclient.__version__, httplib2.__version__, oauth2client.__version__,
                              platform.platform(), platform.machine(), GM.Globals[GM.GAM_PATH])
 
+def ASPsDelete(userKey, codeId):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.asps(), 'delete',
+             throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.INVALID, GAPI.INVALID_PARAMETER, GAPI.FORBIDDEN],
+             userKey=userKey, codeId=codeId)
+    return ({}, True)
+  except (GAPI.userNotFound, GAPI.invalid, GAPI.invalidParameter, GAPI.forbidden) as e:
+    return (str(e), False)
+
+ASP_TIME_OBJECTS = set(['creationTine', 'lastTimeUsed'])
+
+def ASPsList(userKey, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  fields = 'items({0})'.format(kwargs.pop('fields', 'codeId,creationTime,lastTimeUsed,name,userKey'))
+  try:
+    result = callGAPIpages(cd.asps(), 'list', 'items',
+                           throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.INVALID_PARAMETER],
+                           userKey=userKey, fields=fields, **kwargs)
+    return (_cleanJSON(result, timeObjects=ASP_TIME_OBJECTS), True)
+  except (GAPI.userNotFound, GAPI.invalidParameter) as e:
+    return (str(e), False)
+
 def ChromeosdevicesAction(customerId, resourceId, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
   try:
@@ -2174,6 +2197,35 @@ def SchemasUpdate(customerId, schemaKey, **kwargs):
           GAPI.badRequest, GAPI.forbidden, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
+def TokensDelete(userKey, clientId):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.tokens(), 'get',
+             throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.RESOURCE_NOT_FOUND,
+                            GAPI.DOMAIN_NOT_FOUND, GAPI.DOMAIN_CANNOT_USE_APIS, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+             userKey=userKey, clientId=clientId)
+    callGAPI(cd.tokens(), 'delete',
+             throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.RESOURCE_NOT_FOUND,
+                            GAPI.DOMAIN_NOT_FOUND, GAPI.DOMAIN_CANNOT_USE_APIS, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+             userKey=userKey, clientId=clientId)
+    return ({}, True)
+  except (GAPI.userNotFound, GAPI.resourceNotFound,
+          GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def TokensList(userKey, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  fields = 'items({0})'.format(kwargs.pop('fields', 'clientId,displayText,anonymous,nativeApp,userKey,scopes'))
+  try:
+    result = callGAPIpages(cd.tokens(), 'list', 'items',
+                           throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.INVALID_PARAMETER,
+                                          GAPI.DOMAIN_NOT_FOUND, GAPI.DOMAIN_CANNOT_USE_APIS, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
+                           userKey=userKey, fields=fields, **kwargs)
+    return (_cleanJSON(result), True)
+  except (GAPI.userNotFound, GAPI.invalidParameter,
+          GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.notFound, GAPI.forbidden) as e:
+    return (str(e), False)
+
 def UsersDelete(userKey):
   cd = buildGAPIObject(API.DIRECTORY)
   try:
@@ -2284,4 +2336,35 @@ def UsersAliasesList(userKey, **kwargs):
   except (GAPI.userNotFound,
           GAPI.invalid, GAPI.invalidResource,
           GAPI.badRequest, GAPI.conditionNotMet, GAPI.forbidden) as e:
+    return (str(e), False)
+
+def VerificationCodesGenerate(userKey):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.verificationCodes(), 'generate',
+             throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.INVALID, GAPI.INVALID_INPUT],
+             userKey=userKey)
+    return ({}, True)
+  except (GAPI.userNotFound, GAPI.invalid, GAPI.invalidInput) as e:
+    return (str(e), False)
+
+def VerificationCodesInvalidate(userKey):
+  cd = buildGAPIObject(API.DIRECTORY)
+  try:
+    callGAPI(cd.verificationCodes(), 'invalidate',
+             throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.INVALID, GAPI.INVALID_INPUT],
+             userKey=userKey)
+    return ({}, True)
+  except (GAPI.userNotFound, GAPI.invalid, GAPI.invalidInput) as e:
+    return (str(e), False)
+
+def VerificationCodesList(userKey, **kwargs):
+  cd = buildGAPIObject(API.DIRECTORY)
+  fields = 'items({0})'.format(kwargs.pop('fields', 'userId,verificationCode'))
+  try:
+    result = callGAPIpages(cd.verificationCodes(), 'list', 'items',
+                           throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.INVALID_PARAMETER],
+                           userKey=userKey, fields=fields)
+    return (_cleanJSON(result), True)
+  except (GAPI.userNotFound, GAPI.invalidParameter) as e:
     return (str(e), False)
