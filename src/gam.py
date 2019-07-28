@@ -341,6 +341,15 @@ def formatKeyValueList(prefixStr, kvList, suffixStr):
   msg += suffixStr
   return msg
 
+def printLine(message):
+  writeStdout(convertUTF8toSys(message+'\n'))
+
+def printBlankLine():
+  writeStdout('\n')
+
+def printKeyValueList(kvList):
+  writeStdout(formatKeyValueList('', kvList, '\n'))
+
 # Error exits
 def setSysExitRC(sysRC):
   GM.Globals[GM.SYSEXITRC] = sysRC
@@ -595,6 +604,32 @@ def readFile(filename, mode=DEFAULT_FILE_READ_MODE, encoding=None, newline=None,
       return None
     systemErrorExit(FILE_ERROR_RC, e)
 
+# Write a file
+def writeFile(filename, data, mode=DEFAULT_FILE_WRITE_MODE,
+              continueOnError=False, displayError=True):
+  try:
+    kwargs = setEncoding(mode, None)
+    with open(os.path.expanduser(filename), mode, **kwargs) as f:
+      f.write(data)
+    return True
+  except (IOError, LookupError, UnicodeError) as e:
+    if continueOnError:
+      if displayError:
+        stderrErrorMsg(e)
+      setSysExitRC(FILE_ERROR_RC)
+      return False
+    systemErrorExit(FILE_ERROR_RC, e)
+
+# Write a file, return error
+def writeFileReturnError(filename, data, mode=DEFAULT_FILE_WRITE_MODE):
+  try:
+    kwargs = {'encoding': GM.Globals[GM.SYS_ENCODING]} if 'b' not in mode else {}
+    with open(os.path.expanduser(filename), mode, **kwargs) as f:
+      f.write(data)
+    return (True, None)
+  except (IOError, LookupError, UnicodeError) as e:
+    return (False, e)
+
 def incrAPICallsRetryData(errMsg, delta):
   GM.Globals[GM.API_CALLS_RETRY_DATA].setdefault(errMsg, [0, 0.0])
   GM.Globals[GM.API_CALLS_RETRY_DATA][errMsg][0] += 1
@@ -623,9 +658,7 @@ def checkAPICallsRate():
     GM.Globals[GM.RATE_CHECK_COUNT] = 0
 
 # Set global variables from config file
-# Check for GAM updates based on status of no_update_check in config file
-# Return True if there are additional commands on the command line
-def SetGlobalVariables(configFile, sectionName=None):
+def SetGlobalVariables(configFile, sectionName=None, config=None, save=False, verify=False):
 
   def _stringInQuotes(value):
     return (len(value) > 1) and (((value.startswith('"') and value.endswith('"'))) or ((value.startswith("'") and value.endswith("'"))))
@@ -634,6 +667,15 @@ def SetGlobalVariables(configFile, sectionName=None):
     if _stringInQuotes(value):
       return value[1:-1]
     return value
+
+  def _quoteStringIfLeadingTrailingBlanks(value):
+    if not value:
+      return "''"
+    if _stringInQuotes(value):
+      return value
+    if (value[0] != ' ') and (value[-1] != ' '):
+      return value
+    return "'{0}'".format(value)
 
   def _selectSection(value):
     if (not value) or (value.upper() == configparser.DEFAULTSECT):
@@ -752,6 +794,38 @@ def SetGlobalVariables(configFile, sectionName=None):
     except IOError as e:
       systemErrorExit(FILE_ERROR_RC, e)
 
+  def _writeGamCfgFile(config, fileName, action):
+    try:
+      with open(fileName, DEFAULT_FILE_WRITE_MODE) as f:
+        config.write(f)
+      printKeyValueList(['Config File', fileName, action])
+    except IOError as e:
+      stderrErrorMsg(e)
+
+  def _verifyValues(sectionName):
+    printKeyValueList(['Section', sectionName])
+    for itemName in sorted(GC.VAR_INFO):
+      cfgValue = GM.Globals[GM.PARSER].get(sectionName, itemName)
+      varType = GC.VAR_INFO[itemName][GC.VAR_TYPE]
+      if varType == GC.TYPE_CHOICE:
+        for choice, value in iteritems(GC.VAR_INFO[itemName][GC.VAR_CHOICES]):
+          if cfgValue == value:
+            cfgValue = choice
+            break
+      elif varType not in [GC.TYPE_BOOLEAN, GC.TYPE_INTEGER, GC.TYPE_FLOAT]:
+        cfgValue = _quoteStringIfLeadingTrailingBlanks(cfgValue)
+      if varType == GC.TYPE_FILE:
+        expdValue = _getCfgFile(sectionName, itemName)
+        if cfgValue not in ("''", expdValue):
+          cfgValue = '{0} ; {1}'.format(cfgValue, expdValue)
+      elif varType == GC.TYPE_DIRECTORY:
+        expdValue = _getCfgDirectory(sectionName, itemName)
+        if cfgValue not in ("''", expdValue):
+          cfgValue = '{0} ; {1}'.format(cfgValue, expdValue)
+      elif (itemName == GC.SECTION) and (sectionName != configparser.DEFAULTSECT):
+        continue
+      printLine('  {0} = {1}'.format(itemName, cfgValue))
+
   GM.Globals[GM.GAM_CFG_FILE] = configFile
   GM.Globals[GM.PARSER] = configparser.RawConfigParser(defaults=collections.OrderedDict(sorted(list(GC.Defaults.items()), key=lambda t: t[0])))
   _readGamCfgFile(GM.Globals[GM.PARSER], GM.Globals[GM.GAM_CFG_FILE])
@@ -760,13 +834,31 @@ def SetGlobalVariables(configFile, sectionName=None):
     sectionName = _selectSection(sectionName)
   else:
     sectionName = _getCfgSection(configparser.DEFAULTSECT, GC.SECTION)
-# Handle todrive_nobrowser and todrive_noemail if not present
-  value = GM.Globals[GM.PARSER].get(configparser.DEFAULTSECT, GC.TODRIVE_NOBROWSER)
-  if value == '':
-    GM.Globals[GM.PARSER].set(configparser.DEFAULTSECT, GC.TODRIVE_NOBROWSER, str(_getCfgBoolean(configparser.DEFAULTSECT, GC.NO_BROWSER)).lower())
-  value = GM.Globals[GM.PARSER].get(configparser.DEFAULTSECT, GC.TODRIVE_NOEMAIL)
-  if value == '':
-    GM.Globals[GM.PARSER].set(configparser.DEFAULTSECT, GC.TODRIVE_NOEMAIL, str(not _getCfgBoolean(configparser.DEFAULTSECT, GC.NO_BROWSER)).lower())
+# config {"<VariableName>": "<Value>"(, "<VariableName>": "<Value>")*}
+  if config:
+    for itemName, value in sorted(iteritems(config)):
+      varType = GC.VAR_INFO[itemName][GC.VAR_TYPE]
+      if varType == GC.TYPE_BOOLEAN:
+        value = value.strip().lower()
+      elif varType == GC.TYPE_CHARACTER:
+        value = codecs.escape_decode(bytes(value, UTF8))[0].decode(UTF8)
+      elif varType == GC.TYPE_CHOICE:
+        value = value.strip().lower()
+      elif varType == GC.TYPE_INTEGER:
+        value = text_type(value)
+      elif varType == GC.TYPE_FLOAT:
+        value = text_type(value)
+      elif varType == GC.TYPE_TIMEZONE:
+        value = value.strip()
+      else:
+        value = _quoteStringIfLeadingTrailingBlanks(value)
+      GM.Globals[GM.PARSER].set(sectionName, itemName, value)
+# save
+  if save:
+    _writeGamCfgFile(GM.Globals[GM.PARSER], GM.Globals[GM.GAM_CFG_FILE], 'Saved')
+# verify
+  if verify:
+    _verifyValues(sectionName)
 # Assign global variables, directories, timezone first as other variables depend on them
   for itemName in sorted(GC.VAR_INFO):
     varType = GC.VAR_INFO[itemName][GC.VAR_TYPE]
@@ -1338,8 +1430,6 @@ def Version():
                              platform.platform(), platform.machine(), GM.Globals[GM.GAM_PATH])
 
 def ChromeosdevicesAction(customerId, resourceId, **kwargs):
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     callGAPI(cd.chromeosdevices(), 'action',
@@ -1354,8 +1444,6 @@ def ChromeosdevicesAction(customerId, resourceId, **kwargs):
 CROS_TIME_OBJECTS = set(['lastSync', 'lastEnrollmentTime', 'supportEndDate', 'reportTime'])
 
 def ChromeosdevicesGet(customerId, deviceId, **kwargs):
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.chromeosdevices(), 'get',
@@ -1367,8 +1455,6 @@ def ChromeosdevicesGet(customerId, deviceId, **kwargs):
 
 def ChromeosdevicesList(customerId, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   fields = 'nextPageToken,chromeosdevices({0})'.format(kwargs.pop('fields', 'deviceId'))
   try:
     result = callGAPIpages(cd.chromeosdevices(), 'list', 'chromeosdevices',
@@ -1381,8 +1467,6 @@ def ChromeosdevicesList(customerId, **kwargs):
     return (str(e), False)
 
 def ChromeosdevicesMoveDevicesToOu(customerId, orgUnitPath, deviceIds):
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     callGAPI(cd.chromeosdevices(), 'moveDevicesToOu',
@@ -1393,8 +1477,6 @@ def ChromeosdevicesMoveDevicesToOu(customerId, orgUnitPath, deviceIds):
     return (str(e), False)
 
 def ChromeosdevicesUpdate(customerId, deviceId, **kwargs):
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.chromeosdevices(), 'update',
@@ -1409,8 +1491,6 @@ def ChromeosdevicesUpdate(customerId, deviceId, **kwargs):
 CUSTOMER_TIME_OBJECTS = ['customerCreationTime']
 
 def CustomersGet(customerKey, **kwargs):
-  if not customerKey:
-    customerKey = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.customers(), 'get',
@@ -1436,8 +1516,6 @@ def CustomersGet(customerKey, **kwargs):
     return (str(e), False)
 
 def CustomersPatch(customerKey, **kwargs):
-  if not customerKey:
-    customerKey = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.customers(), 'patch',
@@ -1450,8 +1528,6 @@ def CustomersPatch(customerKey, **kwargs):
     return (str(e), False)
 
 def DomainsDelete(customer, domainName):
-  if not customer:
-    customer = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     callGAPI(cd.domains(), 'delete',
@@ -1464,8 +1540,6 @@ def DomainsDelete(customer, domainName):
 DOMAIN_TIME_OBJECTS = set(['creationTime'])
 
 def DomainsGet(customer, domainName, **kwargs):
-  if not customer:
-    customer = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.domains(), 'get',
@@ -1478,8 +1552,6 @@ def DomainsGet(customer, domainName, **kwargs):
     return (str(e), False)
 
 def DomainsInsert(customer, **kwargs):
-  if not customer:
-    customer = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.domains(), 'insert',
@@ -1493,8 +1565,6 @@ def DomainsInsert(customer, **kwargs):
 
 def DomainsList(customer, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customer:
-    customer = GC.Values[GC.CUSTOMER_ID]
   fields = 'domains({0})'.format(kwargs.pop('fields', 'domainName'))
   try:
     result = callGAPIpages(cd.domains(), 'list', 'domains',
@@ -1510,8 +1580,6 @@ def DomainsList(customer, **kwargs):
     return (str(e), False)
 
 def DomainAliasesDelete(customer, domainAliasName):
-  if not customer:
-    customer = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     callGAPI(cd.domainAliases(), 'delete',
@@ -1522,8 +1590,6 @@ def DomainAliasesDelete(customer, domainAliasName):
     return (str(e), False)
 
 def DomainAliasesGet(customer, domainAliasName, **kwargs):
-  if not customer:
-    customer = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.domainAliases(), 'get',
@@ -1536,8 +1602,6 @@ def DomainAliasesGet(customer, domainAliasName, **kwargs):
     return (str(e), False)
 
 def DomainAliasesInsert(customer, **kwargs):
-  if not customer:
-    customer = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.domainAliases(), 'insert',
@@ -1551,8 +1615,6 @@ def DomainAliasesInsert(customer, **kwargs):
 
 def DomainAliasesList(customer, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customer:
-    customer = GC.Values[GC.CUSTOMER_ID]
   fields = 'domainAliases({0})'.format(kwargs.pop('fields', 'domainAliasName'))
   try:
     result = callGAPIpages(cd.domainAliases(), 'list', 'domainAliaese',
@@ -1599,8 +1661,6 @@ def GroupsInsert(**kwargs):
 
 def GroupsList(**kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if kwargs.get('customer') is None and kwargs.get('domain') is None:
-    kwargs['customer'] = GC.Values[GC.CUSTOMER_ID]
   fields = 'nextPageToken,groups({0})'.format(kwargs.pop('fields', 'email'))
   try:
     result = callGAPIpages(cd.groups(), 'list', 'groups',
@@ -1734,8 +1794,6 @@ def MembersPatch(groupKey, memberKey, **kwargs):
     return (str(e), False)
 
 def MobiledevicesAction(customerId, resourceId, **kwargs):
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     callGAPI(cd.mobiledevices(), 'action',
@@ -1747,8 +1805,6 @@ def MobiledevicesAction(customerId, resourceId, **kwargs):
     return (str(e), False)
 
 def MobiledevicesDelete(customerId, resourceid):
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     callGAPI(cd.mobiledevices(), 'delete',
@@ -1762,8 +1818,6 @@ def MobiledevicesDelete(customerId, resourceid):
 MOBILE_TIME_OBJECTS = set(['firstSync', 'lastSync'])
 
 def MobiledevicesGet(customerId, resourceid, **kwargs):
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   cd = buildGAPIObject(API.DIRECTORY)
   try:
     result = callGAPI(cd.mobiledevices(), 'get',
@@ -1777,8 +1831,6 @@ def MobiledevicesGet(customerId, resourceid, **kwargs):
 
 def MobiledevicesList(customerId, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   fields = 'nextPageToken,mobiledevices({0})'.format(kwargs.pop('fields', 'resourceid'))
   try:
     result = callGAPIpages(cd.mobiledevices(), 'list', 'mobiledevices',
@@ -1809,8 +1861,6 @@ def _getTopLevelOrgId(cd, customerId, parentOrgUnitPath):
 
 def OrgunitsDelete(customerId, orgUnitPath):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   try:
     callGAPI(cd.orgunits(), 'delete',
              throw_reasons=[GAPI.CONDITION_NOT_MET, GAPI.INVALID_ORGUNIT, GAPI.ORGUNIT_NOT_FOUND, GAPI.BACKEND_ERROR,
@@ -1823,10 +1873,6 @@ def OrgunitsDelete(customerId, orgUnitPath):
 
 def OrgunitsGet(customerId, orgUnitPath, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
-  if not orgUnitPath:
-    orgUnitPath = '/'
   try:
     if orgUnitPath == '/':
       orgs = callGAPI(cd.orgunits(), 'list',
@@ -1855,8 +1901,6 @@ def OrgunitsGet(customerId, orgUnitPath, **kwargs):
 
 def OrgunitsInsert(customerId, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   try:
     result = callGAPI(cd.orgunits(), 'insert',
                       throw_reasons=[GAPI.INVALID_PARENT_ORGUNIT, GAPI.INVALID_ORGUNIT, GAPI.INVALID_ORGUNIT_NAME,
@@ -1871,8 +1915,6 @@ def OrgunitsInsert(customerId, **kwargs):
 
 def OrgunitsList(customerId, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   fields = 'organizationUnits({0})'.format(kwargs.pop('fields', 'orgUnitPath,orgUnitId'))
   try:
     result = callGAPIpages(cd.orgunits(), 'list', 'organizationUnits',
@@ -1886,10 +1928,6 @@ def OrgunitsList(customerId, **kwargs):
 
 def OrgunitsUpdate(customerId, orgUnitPath, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
-  if not orgUnitPath:
-    orgUnitPath = '/'
   try:
     result = callGAPI(cd.orgunits(), 'update',
                       throw_reasons=[GAPI.INVALID_ORGUNIT, GAPI.ORGUNIT_NOT_FOUND, GAPI.INVALID_ORGUNIT_NAME,
@@ -1904,8 +1942,6 @@ def OrgunitsUpdate(customerId, orgUnitPath, **kwargs):
 
 def SchemasDelete(customerId, schemaKey):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   try:
     callGAPI(cd.schemas(), 'delete',
              throw_reasons=[GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
@@ -1916,8 +1952,6 @@ def SchemasDelete(customerId, schemaKey):
 
 def SchemasGet(customerId, schemaKey, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   try:
     result = callGAPI(cd.schemas(), 'get',
                       throw_reasons=[GAPI.INVALID, GAPI.INVALID_PARAMETER,
@@ -1930,8 +1964,6 @@ def SchemasGet(customerId, schemaKey, **kwargs):
 
 def SchemasInsert(customerId, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   try:
     result = callGAPI(cd.schemas(), 'insert',
                       throw_reasons=[GAPI.DUPLICATE, GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_PARAMETER,
@@ -1944,8 +1976,6 @@ def SchemasInsert(customerId, **kwargs):
 
 def SchemasList(customerId, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   fields = 'schemas({0})'.format(kwargs.pop('fields', 'schemaId,schemaName,displayName,fields'))
   try:
     result = callGAPIpages(cd.schemas(), 'list', 'schemas',
@@ -1959,8 +1989,6 @@ def SchemasList(customerId, **kwargs):
 
 def SchemasUpdate(customerId, schemaKey, **kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if not customerId:
-    customerId = GC.Values[GC.CUSTOMER_ID]
   try:
     result = callGAPI(cd.schemas(), 'update',
                       throw_reasons=[GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_PARAMETER,
@@ -2015,8 +2043,6 @@ def UsersInsert(**kwargs):
 
 def UsersList(**kwargs):
   cd = buildGAPIObject(API.DIRECTORY)
-  if kwargs.get('customer') is None and kwargs.get('domain') is None:
-    kwargs['customer'] = GC.Values[GC.CUSTOMER_ID]
   fields = 'nextPageToken,users({0})'.format(kwargs.pop('fields', 'primaryEmail'))
   try:
     result = callGAPIpages(cd.users(), 'list', 'users',
