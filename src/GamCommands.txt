@@ -1,3 +1,5 @@
+# Directory API
+
 def ASPsDelete(gapiDirObj, userKey, codeId):
 https://developers.google.com/admin-sdk/directory/v1/reference/asps/delete
 
@@ -234,4 +236,32 @@ https://developers.google.com/admin-sdk/directory/v1/reference/verificationCodes
 
 def VerificationCodesList(gapiDirObj, userKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/verificationCodes/list
+
+# Drive v3 API
+
+def DriveAbout(gapiDriveObj, **kwargs):
+https://developers.google.com/drive/api/v3/reference/about/get
+
+def DriveFilesList(gapiDriveObj, **kwargs):
+https://developers.google.com/drive/api/v3/reference/files/list
+
+def DrivePermissionsCreate(gapiDriveObj, fileId, **kwargs):
+https://developers.google.com/drive/api/v3/reference/permissions/create
+
+def DrivePermissionsDelete(gapiDriveObj, fileId, permissionId, **kwargs):
+https://developers.google.com/drive/api/v3/reference/permissions/delete
+
+def DrivePermissionsGet(gapiDriveObj, fileId, permissionId, **kwargs):
+https://developers.google.com/drive/api/v3/reference/permissions/get
+
+def DrivePermissionsList(gapiDriveObj, fileId, **kwargs):
+https://developers.google.com/drive/api/v3/reference/permissions/list
+
+def DrivePermissionsUpdate(gapiDriveObj, fileId, permissionId, **kwargs):
+https://developers.google.com/drive/api/v3/reference/permissions/update
+
+# Gmail API
+
+def GmailUsersGetProfile(gapiGmailObj):
+https://developers.google.com/gmail/api/v1/reference/users/getProfile
 

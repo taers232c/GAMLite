@@ -5,8 +5,8 @@
 import gam
 from gamlib import glapi as API
 
-#GAMCFG = '/Library/Application Support/GAM/gam.cfg'
-GAMCFG = '/Users/Ross/.gam/gam.cfg'
+GAMCFG = '/Library/Application Support/GAM/gam.cfg'
+#GAMCFG = '/Users/Ross/.gam/gam.cfg'
 CHROMEOS_DEVICEID = '32c61153-3808-463b-ba0a-100376212222'
 DOMAIN_NAME = 'rdschool.org'
 TESTGROUP = 'testgroup1'+'@'+DOMAIN_NAME
@@ -25,154 +25,177 @@ gam.SetGlobalVariables(GAMCFG)
 # Version
 print(gam.Version())
 
+# Drive v3 API
+
+gapiDriveObj = gam.buildGAPIServiceObject(API.DRIVE3, TESTUSER)
+
+# DriveAbout
+print('\nDriveAbout')
+result = gam.DriveAbout(gapiDriveObj, fields='user/displayName,storageQuota')
+print(result)
+
+print('\nDriveFilesList')
+result = gam.DriveFilesList(gapiDriveObj, corpora='user', q="'me' in owners", orderBy='folder,name', fields='id,name')
+print(result)
+
+# Gmail API
+
+gapiGmailObj = gam.buildGAPIServiceObject(API.GMAIL, TESTUSER)
+
+# GmailUsersGetProfile
+print('\nGmailUsersGetProfile')
+result = gam.GmailUsersGetProfile(gapiGmailObj)
+print(result)
+
+# Directory API
 gapiDirObj = gam.buildGAPIObject(API.DIRECTORY)
 
 # Customers
 print('\nCustomersGet')
-result, status = gam.CustomersGet(gapiDirObj, customer)
-print(status, result)
-if status:
+result = gam.CustomersGet(gapiDirObj, customer)
+print(result)
+if isinstance(result, dict):
   customer = result.get('id', customer)
 
 # Domains
 print('\nDomainsGet')
-result, status = gam.DomainsGet(gapiDirObj, customer, DOMAIN_NAME)
-print(status, result)
+result = gam.DomainsGet(gapiDirObj, customer, DOMAIN_NAME)
+print(result)
 print('\nDomainsList')
-result, status = gam.DomainsList(gapiDirObj, customer)
-print(status, result)
+result = gam.DomainsList(gapiDirObj, customer)
+print(result)
 
 # Domain Aliases
 print('\nDomainAliasesList')
-result, status = gam.DomainAliasesList(gapiDirObj, customer)
-print(status, result)
+result = gam.DomainAliasesList(gapiDirObj, customer)
+print(result)
 
 # ASPS
 print('\nASPSList')
-result, status = gam.ASPsList(gapiDirObj, TESTUSER)
-print(status, result)
+result = gam.ASPsList(gapiDirObj, TESTUSER)
+print(result)
 
 # Chromeos Devices
 print('\nChromeosdevicesGet')
-result, status = gam.ChromeosdevicesGet(gapiDirObj, customer, deviceId=CHROMEOS_DEVICEID, fields='deviceId,orgUnitPath')
-print(status, result)
+result = gam.ChromeosdevicesGet(gapiDirObj, customer, deviceId=CHROMEOS_DEVICEID, fields='deviceId,orgUnitPath')
+print(result)
 print('\nChromeosdevicesList')
-result, status = gam.ChromeosdevicesList(gapiDirObj, customer, fields='deviceId,orgUnitPath')
+result = gam.ChromeosdevicesList(gapiDirObj, customer, fields='deviceId,orgUnitPath')
 
 # Groups
 print('\nGroupsGet')
-result, status = gam.GroupsGet(gapiDirObj, groupKey=TESTGROUP, fields='*')
-print(status, result)
+result = gam.GroupsGet(gapiDirObj, groupKey=TESTGROUP, fields='*')
+print(result)
 print('\nGroupsList')
-result, status = gam.GroupsList(gapiDirObj, customer=customer, fields='email,directMembersCount')
-print(status, result)
+result = gam.GroupsList(gapiDirObj, customer=customer, fields='email,directMembersCount')
+print(result)
 
 # Groups Aliases
 print('\nGroupsAliasesInsert')
-result, status = gam.GroupsAliasesInsert(gapiDirObj, TESTGROUP, TESTGROUP_ALIAS)
-print(status, result)
+result = gam.GroupsAliasesInsert(gapiDirObj, TESTGROUP, TESTGROUP_ALIAS)
+print(result)
 print('\nGroupsAliasesList')
-result, status = gam.GroupsAliasesList(gapiDirObj, TESTGROUP, fields='*')
-print(status, result)
+result = gam.GroupsAliasesList(gapiDirObj, TESTGROUP, fields='*')
+print(result)
 print('\nGroupsAliasesDelete')
-result, status = gam.GroupsAliasesDelete(gapiDirObj, TESTGROUP, TESTGROUP_ALIAS)
+result = gam.GroupsAliasesDelete(gapiDirObj, TESTGROUP, TESTGROUP_ALIAS)
 
 # Members
-print(status, result)
+print(result)
 print('\nMembersGet')
-result, status = gam.MembersGet(gapiDirObj, TESTGROUP, TESTUSER, fields='*')
-print(status, result)
+result = gam.MembersGet(gapiDirObj, TESTGROUP, TESTUSER, fields='*')
+print(result)
 print('\nMembersList')
-result, status = gam.MembersList(gapiDirObj, TESTGROUP, fields='email,id,role,status,type,delivery_settings')
-print(status, result)
+result = gam.MembersList(gapiDirObj, TESTGROUP, fields='email,id,role,status,type,delivery_settings')
+print(result)
 
 # Mobile Devices
 print('\nMobiledevicesList')
-result, status = gam.MobiledevicesList(gapiDirObj, customer, fields='resourceId,name')
-print(status, result)
+result = gam.MobiledevicesList(gapiDirObj, customer, fields='resourceId,name')
+print(result)
 
 # Org Units
 print('\nOrgunitsInsert')
-result, status = gam.OrgunitsInsert(gapiDirObj, customer, body={'name': TESTOU, 'parentOrgUnitPath': TESTOUPARENT})
-print(status, result)
+result = gam.OrgunitsInsert(gapiDirObj, customer, body={'name': TESTOU, 'parentOrgUnitPath': TESTOUPARENT})
+print(result)
 print('\nOrgunitsGet')
-result, status = gam.OrgunitsGet(gapiDirObj, customer, TESTOUPARENT+'/'+TESTOU)
-print(status, result)
+result = gam.OrgunitsGet(gapiDirObj, customer, TESTOUPARENT+'/'+TESTOU)
+print(result)
 print('\nOrgunitsUpdate')
-result, status = gam.OrgunitsUpdate(gapiDirObj, customer, TESTOUPARENT+'/'+TESTOU, body={'description': 'Fribble'})
-print(status, result)
+result = gam.OrgunitsUpdate(gapiDirObj, customer, TESTOUPARENT+'/'+TESTOU, body={'description': 'Fribble'})
+print(result)
 print('\nOrgunitsList')
-result, status = gam.OrgunitsList(gapiDirObj, customer)
-print(status, result)
+result = gam.OrgunitsList(gapiDirObj, customer)
+print(result)
 print('\nOrgunitsDelete')
-result, status = gam.OrgunitsDelete(gapiDirObj, customer, TESTOUPARENT+'/'+TESTOU)
-print(status, result)
+result = gam.OrgunitsDelete(gapiDirObj, customer, TESTOUPARENT+'/'+TESTOU)
+print(result)
 
 # Privileges
 print('\nPrivilegesList')
-result, status = gam.PrivilegesList(gapiDirObj, customer)
-print(status, result)
+result = gam.PrivilegesList(gapiDirObj, customer)
+print(result)
 
 # Roles
 print('\nRolesList')
-result, status = gam.RolesList(gapiDirObj, customer)
-print(status, result)
+result = gam.RolesList(gapiDirObj, customer)
+print(result)
 
 # Role Assignments
 print('\nRoleAssignmentsList')
-result, status = gam.RoleAssignmentsList(gapiDirObj, customer, TESTUSER)
-print(status, result)
+result = gam.RoleAssignmentsList(gapiDirObj, customer, TESTUSER)
+print(result)
 
 # Schemas
 print('\nSchemasInsert')
-result, status = gam.SchemasInsert(gapiDirObj, customer, body={'schemaName': TESTSCHEMA, 'displayName': TESTSCHEMA+' Display',
-                                                               'fields': [{'fieldName': 'BoolField', 'displayName': 'BoolField Display', 'fieldType': 'BOOL'}]})
-print(status, result)
+result = gam.SchemasInsert(gapiDirObj, customer, body={'schemaName': TESTSCHEMA, 'displayName': TESTSCHEMA+' Display',
+                                                       'fields': [{'fieldName': 'BoolField', 'displayName': 'BoolField Display', 'fieldType': 'BOOL'}]})
+print(result)
 print('\nSchemasGet')
-result, status = gam.SchemasGet(gapiDirObj, customer, TESTSCHEMA)
-print(status, result)
+result = gam.SchemasGet(gapiDirObj, customer, TESTSCHEMA)
+print(result)
 print('\nSchemasUpdate')
-result, status = gam.SchemasUpdate(gapiDirObj, customer, TESTSCHEMA, body={'schemaName': TESTSCHEMA,
-                                                                           'fields': [{'fieldName': 'IntField', 'displayName': 'IntField Display', 'fieldType': 'INT64'}]})
-print(status, result)
+result = gam.SchemasUpdate(gapiDirObj, customer, TESTSCHEMA, body={'schemaName': TESTSCHEMA,
+                                                                   'fields': [{'fieldName': 'IntField', 'displayName': 'IntField Display', 'fieldType': 'INT64'}]})
+print(result)
 print('\nSchemasList')
-result, status = gam.SchemasList(gapiDirObj, customer)
-print(status, result)
+result = gam.SchemasList(gapiDirObj, customer)
+print(result)
 print('\nSchemasDelete')
-result, status = gam.SchemasDelete(gapiDirObj, customer, TESTSCHEMA)
-print(status, result)
+result = gam.SchemasDelete(gapiDirObj, customer, TESTSCHEMA)
+print(result)
 print('\nUsersGet')
-result, status = gam.UsersGet(gapiDirObj, TESTUSER, fields='*')
-print(status, result)
+result = gam.UsersGet(gapiDirObj, TESTUSER, fields='*')
+print(result)
 
 # Tokens
 print('\nTokensList')
-result, status = gam.TokensList(gapiDirObj, TESTUSER)
-print(status, result)
+result = gam.TokensList(gapiDirObj, TESTUSER)
+print(result)
 
 # Users
 print('\nUsersList')
-result, status = gam.UsersList(gapiDirObj, customer=customer, query='orgUnitPath:/Test', fields='primaryEmail,includeInGlobalAddressList,suspended')
-print(status, result)
+result = gam.UsersList(gapiDirObj, customer=customer, query='orgUnitPath:/Test', fields='primaryEmail,includeInGlobalAddressList,suspended')
+print(result)
 print('\nUsersAliasesInsert')
-result, status = gam.UsersAliasesInsert(gapiDirObj, TESTUSER, TESTUSER_ALIAS)
-print(status, result)
+result = gam.UsersAliasesInsert(gapiDirObj, TESTUSER, TESTUSER_ALIAS)
+print(result)
 
 # Users Aliases
 print('\nUsersAliasesList')
-result, status = gam.UsersAliasesList(gapiDirObj, TESTUSER, fields='*')
-print(status, result)
+result = gam.UsersAliasesList(gapiDirObj, TESTUSER, fields='*')
+print(result)
 print('\nUsersAliasesDelete')
-result, status = gam.UsersAliasesDelete(gapiDirObj, TESTUSER, TESTUSER_ALIAS)
-print(status, result)
+result = gam.UsersAliasesDelete(gapiDirObj, TESTUSER, TESTUSER_ALIAS)
+print(result)
 
 # Verification Codes
 print('\nVerificationCodesGenerate')
-result, status = gam.VerificationCodesGenerate(gapiDirObj, TESTUSER)
-print(status, result)
+result = gam.VerificationCodesGenerate(gapiDirObj, TESTUSER)
+print(result)
 print('\nVerificationCodesList')
-result, status = gam.VerificationCodesList(gapiDirObj, TESTUSER)
-print(status, result)
+result = gam.VerificationCodesList(gapiDirObj, TESTUSER)
+print(result)
 print('\nVerificationCodesInvalidate')
-result, status = gam.VerificationCodesInvalidate(gapiDirObj, TESTUSER)
-print(status, result)
+result = gam.VerificationCodesInvalidate(gapiDirObj, TESTUSER)
+print(result)
