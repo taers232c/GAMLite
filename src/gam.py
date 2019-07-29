@@ -389,9 +389,6 @@ def accessErrorMessage(cd):
                               '')
   return None
 
-def accessErrorExit(cd):
-  systemErrorExit(INVALID_DOMAIN_RC, accessErrorMessage(cd or buildGAPIObject(API.DIRECTORY)))
-
 def ClientAPIAccessDeniedExit():
   stderrErrorMsg(Msg.API_ACCESS_DENIED)
   missingScopes = API.getClientScopesSet(GM.Globals[GM.CURRENT_CLIENT_API])-GM.Globals[GM.CURRENT_CLIENT_API_SCOPES]
@@ -1320,8 +1317,9 @@ def buildGAPIObject(api):
   except KeyError:
     API_Scopes = set(API.VAULT_SCOPES) if api == API.VAULT else set()
   GM.Globals[GM.CURRENT_CLIENT_API] = api
-  GM.Globals[GM.CURRENT_CLIENT_API_SCOPES] = API_Scopes.intersection(credentials.scopes)
-  if api != API.OAUTH2 and not GM.Globals[GM.CURRENT_CLIENT_API_SCOPES]:
+  scopes = API_Scopes.intersection(credentials.scopes)
+  GM.Globals[GM.CURRENT_CLIENT_API_SCOPES] = scopes
+  if api != API.OAUTH2 and not scopes:
     systemErrorExit(NO_SCOPES_FOR_API_RC, Msg.NO_SCOPES_FOR_API.format(service._rootDesc['title']))
   retries = 3
   for n in range(1, retries+1):
@@ -1333,7 +1331,7 @@ def buildGAPIObject(api):
         GC.Values[GC.CUSTOMER_ID] = GC.MY_CUSTOMER
       GM.Globals[GM.ADMIN] = credentials.id_token.get('email', 'UNKNOWN').lower()
       GM.Globals[GM.OAUTH2_CLIENT_ID] = credentials.client_id
-      return service
+      return {'service': service, 'api': api, 'scopes': scopes}
     except (oauth2client.client.AccessTokenRefreshError, google.auth.exceptions.RefreshError) as e:
       if isinstance(e.args, tuple):
         e = e.args[0]
@@ -1344,6 +1342,11 @@ def buildGAPIObject(api):
         waitOnFailure(n, retries, NETWORK_ERROR_RC, str(e))
         continue
       handleServerError(e)
+
+def useGAPIObject(gapiObj):
+  GM.Globals[GM.CURRENT_CLIENT_API] = gapiObj['api']
+  GM.Globals[GM.CURRENT_CLIENT_API_SCOPES] = gapiObj['scopes']
+  return gapiObj['service']
 
 # Override and wrap google_auth_httplib2 request methods so that the GAM
 # user-agent string is inserted into HTTP request headers.
@@ -1429,8 +1432,8 @@ def Version():
                              sys.version_info[3], googleapiclient.__version__, httplib2.__version__, oauth2client.__version__,
                              platform.platform(), platform.machine(), GM.Globals[GM.GAM_PATH])
 
-def ASPsDelete(userKey, codeId):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ASPsDelete(gapiDirObj, userKey, codeId):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.asps(), 'delete',
              throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.INVALID, GAPI.INVALID_PARAMETER, GAPI.FORBIDDEN],
@@ -1441,8 +1444,8 @@ def ASPsDelete(userKey, codeId):
 
 ASP_TIME_OBJECTS = set(['creationTine', 'lastTimeUsed'])
 
-def ASPsList(userKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ASPsList(gapiDirObj, userKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'items({0})'.format(kwargs.pop('fields', 'codeId,creationTime,lastTimeUsed,name,userKey'))
   try:
     result = callGAPIpages(cd.asps(), 'list', 'items',
@@ -1452,8 +1455,8 @@ def ASPsList(userKey, **kwargs):
   except (GAPI.userNotFound, GAPI.invalidParameter) as e:
     return (str(e), False)
 
-def ChromeosdevicesAction(customerId, resourceId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ChromeosdevicesAction(gapiDirObj, customerId, resourceId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.chromeosdevices(), 'action',
              throw_reasons=[GAPI.INVALID, GAPI.CONDITION_NOT_MET,
@@ -1466,8 +1469,8 @@ def ChromeosdevicesAction(customerId, resourceId, **kwargs):
 
 CROS_TIME_OBJECTS = set(['lastSync', 'lastEnrollmentTime', 'supportEndDate', 'reportTime'])
 
-def ChromeosdevicesGet(customerId, deviceId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ChromeosdevicesGet(gapiDirObj, customerId, deviceId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.chromeosdevices(), 'get',
                       throw_reasons=[GAPI.INVALID_PARAMETER, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
@@ -1476,8 +1479,8 @@ def ChromeosdevicesGet(customerId, deviceId, **kwargs):
   except (GAPI.invalidParameter, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ChromeosdevicesList(customerId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ChromeosdevicesList(gapiDirObj, customerId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'nextPageToken,chromeosdevices({0})'.format(kwargs.pop('fields', 'deviceId'))
   try:
     result = callGAPIpages(cd.chromeosdevices(), 'list', 'chromeosdevices',
@@ -1489,8 +1492,8 @@ def ChromeosdevicesList(customerId, **kwargs):
           GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ChromeosdevicesMoveDevicesToOu(customerId, orgUnitPath, deviceIds):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ChromeosdevicesMoveDevicesToOu(gapiDirObj, customerId, orgUnitPath, deviceIds):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.chromeosdevices(), 'moveDevicesToOu',
              throw_reasons=[GAPI.INVALID_ORGUNIT, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
@@ -1499,8 +1502,8 @@ def ChromeosdevicesMoveDevicesToOu(customerId, orgUnitPath, deviceIds):
   except (GAPI.invalidOrgunit, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ChromeosdevicesUpdate(customerId, deviceId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ChromeosdevicesUpdate(gapiDirObj, customerId, deviceId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.chromeosdevices(), 'update',
                       throw_reasons=[GAPI.INVALID, GAPI.INVALID_PARAMETER, GAPI.CONDITION_NOT_MET,
@@ -1513,8 +1516,8 @@ def ChromeosdevicesUpdate(customerId, deviceId, **kwargs):
 
 CUSTOMER_TIME_OBJECTS = ['customerCreationTime']
 
-def CustomersGet(customerKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def CustomersGet(gapiDirObj, customerKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.customers(), 'get',
                       throw_reasons=[GAPI.INVALID_PARAMETER, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
@@ -1538,8 +1541,8 @@ def CustomersGet(customerKey, **kwargs):
   except (GAPI.invalidParameter, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden, GAPI.domainNotFound, GAPI.notFound) as e:
     return (str(e), False)
 
-def CustomersPatch(customerKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def CustomersPatch(gapiDirObj, customerKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.customers(), 'patch',
                       throw_reasons=[GAPI.DOMAIN_NOT_VERIFIED_SECONDARY, GAPI.INVALID, GAPI.INVALID_INPUT,
@@ -1550,8 +1553,8 @@ def CustomersPatch(customerKey, **kwargs):
           GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def DomainsDelete(customer, domainName):
-  cd = buildGAPIObject(API.DIRECTORY)
+def DomainsDelete(gapiDirObj, customer, domainName):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.domains(), 'delete',
              throw_reasons=[GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
@@ -1562,8 +1565,8 @@ def DomainsDelete(customer, domainName):
 
 DOMAIN_TIME_OBJECTS = set(['creationTime'])
 
-def DomainsGet(customer, domainName, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def DomainsGet(gapiDirObj, customer, domainName, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.domains(), 'get',
                       throw_reasons=[GAPI.DOMAIN_NOT_FOUND, GAPI.INVALID_PARAMETER,
@@ -1574,8 +1577,8 @@ def DomainsGet(customer, domainName, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def DomainsInsert(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def DomainsInsert(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.domains(), 'insert',
                       throw_reasons=[GAPI.DUPLICATE, GAPI.INVALID_PARAMETER,
@@ -1586,8 +1589,8 @@ def DomainsInsert(customer, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def DomainsList(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def DomainsList(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'domains({0})'.format(kwargs.pop('fields', 'domainName'))
   try:
     result = callGAPIpages(cd.domains(), 'list', 'domains',
@@ -1602,8 +1605,8 @@ def DomainsList(customer, **kwargs):
           GAPI.badRequest, GAPI.invalidInput, GAPI.invalidParameter) as e:
     return (str(e), False)
 
-def DomainAliasesDelete(customer, domainAliasName):
-  cd = buildGAPIObject(API.DIRECTORY)
+def DomainAliasesDelete(gapiDirObj, customer, domainAliasName):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.domainAliases(), 'delete',
              throw_reasons=[GAPI.DOMAIN_ALIAS_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
@@ -1612,8 +1615,8 @@ def DomainAliasesDelete(customer, domainAliasName):
   except (GAPI.domainAliasNotFound, GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def DomainAliasesGet(customer, domainAliasName, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def DomainAliasesGet(gapiDirObj, customer, domainAliasName, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.domainAliases(), 'get',
                       throw_reasons=[GAPI.DOMAIN_ALIAS_NOT_FOUND, GAPI.INVALID_PARAMETER,
@@ -1624,8 +1627,8 @@ def DomainAliasesGet(customer, domainAliasName, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def DomainAliasesInsert(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def DomainAliasesInsert(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.domainAliases(), 'insert',
                       throw_reasons=[GAPI.DOMAIN_NOT_FOUND, GAPI.DUPLICATE, GAPI.INVALID_PARAMETER,
@@ -1636,8 +1639,8 @@ def DomainAliasesInsert(customer, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def DomainAliasesList(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def DomainAliasesList(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'domainAliases({0})'.format(kwargs.pop('fields', 'domainAliasName'))
   try:
     result = callGAPIpages(cd.domainAliases(), 'list', 'domainAliaese',
@@ -1647,8 +1650,8 @@ def DomainAliasesList(customer, **kwargs):
   except (GAPI.invalidParameter, GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def GroupsDelete(groupKey):
-  cd = buildGAPIObject(API.DIRECTORY)
+def GroupsDelete(gapiDirObj, groupKey):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.groups(), 'delete',
              throw_reasons=[GAPI.GROUP_NOT_FOUND, GAPI.DOMAIN_NOT_FOUND,
@@ -1659,8 +1662,8 @@ def GroupsDelete(groupKey):
           GAPI.domainCannotUseApis, GAPI.forbidden, GAPI.invalid) as e:
     return (str(e), False)
 
-def GroupsGet(groupKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def GroupsGet(gapiDirObj, groupKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.groups(), 'get',
                       throw_reasons=GAPI.GROUP_GET_THROW_REASONS+[GAPI.INVALID_PARAMETER],
@@ -1671,8 +1674,8 @@ def GroupsGet(groupKey, **kwargs):
           GAPI.badRequest, GAPI.invalid, GAPI.systemError) as e:
     return (str(e), False)
 
-def GroupsInsert(**kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def GroupsInsert(gapiDirObj, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.groups(), 'insert',
                       throw_reasons=GAPI.GROUP_CREATE_THROW_REASONS+[GAPI.INVALID_PARAMETER],
@@ -1682,8 +1685,8 @@ def GroupsInsert(**kwargs):
           GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden) as e:
     return (str(e), False)
 
-def GroupsList(**kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def GroupsList(gapiDirObj, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'nextPageToken,groups({0})'.format(kwargs.pop('fields', 'email'))
   try:
     result = callGAPIpages(cd.groups(), 'list', 'groups',
@@ -1697,8 +1700,8 @@ def GroupsList(**kwargs):
           GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden) as e:
     return (str(e), False)
 
-def GroupsUpdate(groupKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def GroupsUpdate(gapiDirObj, groupKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.groups(), 'update',
                       throw_reasons=GAPI.GROUP_UPDATE_THROW_REASONS+[GAPI.INVALID_PARAMETER],
@@ -1709,8 +1712,8 @@ def GroupsUpdate(groupKey, **kwargs):
           GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden) as e:
     return (str(e), False)
 
-def GroupsAliasesDelete(groupKey, alias):
-  cd = buildGAPIObject(API.DIRECTORY)
+def GroupsAliasesDelete(gapiDirObj, groupKey, alias):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.groups().aliases(), 'delete',
              throw_reasons=[GAPI.GROUP_NOT_FOUND, GAPI.INVALID_RESOURCE, GAPI.INVALID,
@@ -1721,8 +1724,8 @@ def GroupsAliasesDelete(groupKey, alias):
           GAPI.badRequest, GAPI.conditionNotMet, GAPI.forbidden) as e:
     return (str(e), False)
 
-def GroupsAliasesInsert(groupKey, alias, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def GroupsAliasesInsert(gapiDirObj, groupKey, alias, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.groups().aliases(), 'insert',
                       throw_reasons=[GAPI.GROUP_NOT_FOUND, GAPI.DUPLICATE,
@@ -1735,8 +1738,8 @@ def GroupsAliasesInsert(groupKey, alias, **kwargs):
           GAPI.badRequest, GAPI.conditionNotMet, GAPI.forbidden) as e:
     return (str(e), False)
 
-def GroupsAliasesList(groupKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def GroupsAliasesList(gapiDirObj, groupKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'aliases({0})'.format(kwargs.pop('fields', 'alias'))
   try:
     result = callGAPIpages(cd.groups().aliases(), 'list', 'aliases',
@@ -1750,8 +1753,8 @@ def GroupsAliasesList(groupKey, **kwargs):
           GAPI.conditionNotMet) as e:
     return (str(e), False)
 
-def MembersDelete(groupKey, memberKey):
-  cd = buildGAPIObject(API.DIRECTORY)
+def MembersDelete(gapiDirObj, groupKey, memberKey):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.members(), 'delete',
              throw_reasons=GAPI.MEMBERS_THROW_REASONS+[GAPI.MEMBER_NOT_FOUND, GAPI.INVALID_MEMBER,
@@ -1763,8 +1766,8 @@ def MembersDelete(groupKey, memberKey):
           GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden) as e:
     return (str(e), False)
 
-def MembersGet(groupKey, memberKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def MembersGet(gapiDirObj, groupKey, memberKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.members(), 'get',
                       throw_reasons=GAPI.MEMBERS_THROW_REASONS+[GAPI.MEMBER_NOT_FOUND, GAPI.INVALID_PARAMETER],
@@ -1775,8 +1778,8 @@ def MembersGet(groupKey, memberKey, **kwargs):
           GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden) as e:
     return (str(e), False)
 
-def MembersInsert(groupKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def MembersInsert(gapiDirObj, groupKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.members(), 'insert',
                       throw_reasons=GAPI.MEMBERS_THROW_REASONS+[GAPI.DUPLICATE, GAPI.MEMBER_NOT_FOUND,
@@ -1791,8 +1794,8 @@ def MembersInsert(groupKey, **kwargs):
           GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden) as e:
     return (str(e), False)
 
-def MembersList(groupKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def MembersList(gapiDirObj, groupKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'nextPageToken,members({0})'.format(kwargs.pop('fields', 'email'))
   try:
     result = callGAPIpages(cd.members(), 'list', 'members',
@@ -1804,8 +1807,8 @@ def MembersList(groupKey, **kwargs):
           GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden) as e:
     return (str(e), False)
 
-def MembersPatch(groupKey, memberKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def MembersPatch(gapiDirObj, groupKey, memberKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.members(), 'patch',
                       throw_reasons=GAPI.MEMBERS_THROW_REASONS+[GAPI.MEMBER_NOT_FOUND, GAPI.INVALID_MEMBER, GAPI.INVALID_PARAMETER],
@@ -1816,8 +1819,8 @@ def MembersPatch(groupKey, memberKey, **kwargs):
           GAPI.groupNotFound, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.invalid, GAPI.forbidden) as e:
     return (str(e), False)
 
-def MobiledevicesAction(customerId, resourceId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def MobiledevicesAction(gapiDirObj, customerId, resourceId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.mobiledevices(), 'action',
              bailOnInternalError=True,
@@ -1827,8 +1830,8 @@ def MobiledevicesAction(customerId, resourceId, **kwargs):
   except (GAPI.internalError, GAPI.resourceIdNotFound, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def MobiledevicesDelete(customerId, resourceid):
-  cd = buildGAPIObject(API.DIRECTORY)
+def MobiledevicesDelete(gapiDirObj, customerId, resourceid):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.mobiledevices(), 'delete',
              bailOnInternalError=True,
@@ -1840,8 +1843,8 @@ def MobiledevicesDelete(customerId, resourceid):
 
 MOBILE_TIME_OBJECTS = set(['firstSync', 'lastSync'])
 
-def MobiledevicesGet(customerId, resourceid, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def MobiledevicesGet(gapiDirObj, customerId, resourceid, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.mobiledevices(), 'get',
                       throw_reasons=[GAPI.INVALID_PARAMETER,
@@ -1852,8 +1855,8 @@ def MobiledevicesGet(customerId, resourceid, **kwargs):
           GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def MobiledevicesList(customerId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def MobiledevicesList(gapiDirObj, customerId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'nextPageToken,mobiledevices({0})'.format(kwargs.pop('fields', 'resourceid'))
   try:
     result = callGAPIpages(cd.mobiledevices(), 'list', 'mobiledevices',
@@ -1882,8 +1885,8 @@ def _getTopLevelOrgId(cd, customerId, parentOrgUnitPath):
     return (str(e), False)
   return (temp_org['parentOrgUnitId'], True)
 
-def OrgunitsDelete(customerId, orgUnitPath):
-  cd = buildGAPIObject(API.DIRECTORY)
+def OrgunitsDelete(gapiDirObj, customerId, orgUnitPath):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.orgunits(), 'delete',
              throw_reasons=[GAPI.CONDITION_NOT_MET, GAPI.INVALID_ORGUNIT, GAPI.ORGUNIT_NOT_FOUND, GAPI.BACKEND_ERROR,
@@ -1894,8 +1897,8 @@ def OrgunitsDelete(customerId, orgUnitPath):
           GAPI.badRequest, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
-def OrgunitsGet(customerId, orgUnitPath, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def OrgunitsGet(gapiDirObj, customerId, orgUnitPath, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     if orgUnitPath == '/':
       orgs = callGAPI(cd.orgunits(), 'list',
@@ -1922,8 +1925,8 @@ def OrgunitsGet(customerId, orgUnitPath, **kwargs):
           GAPI.badRequest, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
-def OrgunitsInsert(customerId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def OrgunitsInsert(gapiDirObj, customerId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.orgunits(), 'insert',
                       throw_reasons=[GAPI.INVALID_PARENT_ORGUNIT, GAPI.INVALID_ORGUNIT, GAPI.INVALID_ORGUNIT_NAME,
@@ -1936,8 +1939,8 @@ def OrgunitsInsert(customerId, **kwargs):
           GAPI.badRequest, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
-def OrgunitsList(customerId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def OrgunitsList(gapiDirObj, customerId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'organizationUnits({0})'.format(kwargs.pop('fields', 'orgUnitPath,orgUnitId'))
   try:
     result = callGAPIpages(cd.orgunits(), 'list', 'organizationUnits',
@@ -1949,8 +1952,8 @@ def OrgunitsList(customerId, **kwargs):
           GAPI.badRequest, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
-def OrgunitsUpdate(customerId, orgUnitPath, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def OrgunitsUpdate(gapiDirObj, customerId, orgUnitPath, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.orgunits(), 'update',
                       throw_reasons=[GAPI.INVALID_ORGUNIT, GAPI.ORGUNIT_NOT_FOUND, GAPI.INVALID_ORGUNIT_NAME,
@@ -1963,8 +1966,8 @@ def OrgunitsUpdate(customerId, orgUnitPath, **kwargs):
           GAPI.badRequest, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
-def PrivilegesList(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def PrivilegesList(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'items({0})'.format(kwargs.pop('fields', 'serviceId,serviceName,privilegeName,isOuScopable,childPrivileges'))
   try:
     result = callGAPIpages(cd.privileges(), 'list', 'items',
@@ -1974,8 +1977,8 @@ def PrivilegesList(customer, **kwargs):
   except (GAPI.invalidParameter, GAPI.badRequest, GAPI.customerNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesBuildingsDelete(customer, buildingId):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesBuildingsDelete(gapiDirObj, customer, buildingId):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.resources().buildings(), 'delete',
              throw_reasons=[GAPI.RESOURCE_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
@@ -1984,8 +1987,8 @@ def ResourcesBuildingsDelete(customer, buildingId):
   except (GAPI.resourceNotFound, GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesBuildingsGet(customer, buildingId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesBuildingsGet(gapiDirObj, customer, buildingId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.resources().buildings(), 'get',
                       throw_reasons=[GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_PARAMETER,
@@ -1996,8 +1999,8 @@ def ResourcesBuildingsGet(customer, buildingId, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesBuildingsInsert(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesBuildingsInsert(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.resources().buildings(), 'insert',
                       throw_reasons=[GAPI.DUPLICATE, GAPI.INVALID_INPUT, GAPI.INVALID_PARAMETER,
@@ -2008,8 +2011,8 @@ def ResourcesBuildingsInsert(customer, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesBuildingsList(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesBuildingsList(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'nextPageToken,items({0})'.format(kwargs.pop('fields', 'resourceId,resourceName,resourceEmail,resourceDescription,resourceType'))
   try:
     result = callGAPIpages(cd.resources().buildings(), 'list', 'items',
@@ -2021,8 +2024,8 @@ def ResourcesBuildingsList(customer, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesBuildingsPatch(customer, buildingId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesBuildingsPatch(gapiDirObj, customer, buildingId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.resources().buildings(), 'patch',
                       throw_reasons=[GAPI.DUPLICATE, GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_INPUT, GAPI.INVALID_PARAMETER,
@@ -2033,8 +2036,8 @@ def ResourcesBuildingsPatch(customer, buildingId, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesCalendarsDelete(customer, calendarResourceId):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesCalendarsDelete(gapiDirObj, customer, calendarResourceId):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.resources().calendars(), 'delete',
              throw_reasons=[GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
@@ -2043,8 +2046,8 @@ def ResourcesCalendarsDelete(customer, calendarResourceId):
   except (GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesCalendarsGet(customer, calendarResourceId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesCalendarsGet(gapiDirObj, customer, calendarResourceId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.resources().calendars(), 'get',
                       throw_reasons=[GAPI.INVALID_PARAMETER, GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
@@ -2053,8 +2056,8 @@ def ResourcesCalendarsGet(customer, calendarResourceId, **kwargs):
   except (GAPI.invalidParameter, GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesCalendarsInsert(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesCalendarsInsert(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.resources().calendars(), 'insert',
                       throw_reasons=[GAPI.INVALID, GAPI.INVALID_INPUT, GAPI.REQUIRED, GAPI.INVALID_PARAMETER, GAPI.DUPLICATE,
@@ -2065,8 +2068,8 @@ def ResourcesCalendarsInsert(customer, **kwargs):
           GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesCalendarsList(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesCalendarsList(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'nextPageToken,items({0})'.format(kwargs.pop('fields', 'resourceId,resourceName,resourceEmail,resourceDescription,resourceType'))
   try:
     result = callGAPIpages(cd.resources().calendars(), 'list', 'items',
@@ -2078,8 +2081,8 @@ def ResourcesCalendarsList(customer, **kwargs):
           GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesCalendarsPatch(customer, calendarResourceId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesCalendarsPatch(gapiDirObj, customer, calendarResourceId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.resources().calendars(), 'patch',
                       throw_reasons=[GAPI.INVALID, GAPI.INVALID_INPUT, GAPI.REQUIRED, GAPI.INVALID_PARAMETER,
@@ -2090,8 +2093,8 @@ def ResourcesCalendarsPatch(customer, calendarResourceId, **kwargs):
           GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesFeaturesDelete(customer, featureKey):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesFeaturesDelete(gapiDirObj, customer, featureKey):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.resources().features(), 'delete',
              throw_reasons=[GAPI.RESOURCE_NOT_FOUND, GAPI.BAD_REQUEST, GAPI.NOT_FOUND, GAPI.FORBIDDEN],
@@ -2100,8 +2103,8 @@ def ResourcesFeaturesDelete(customer, featureKey):
   except (GAPI.resourceNotFound, GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesFeaturesGet(customer, featureKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesFeaturesGet(gapiDirObj, customer, featureKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.resources().features(), 'get',
                       throw_reasons=[GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_PARAMETER,
@@ -2112,8 +2115,8 @@ def ResourcesFeaturesGet(customer, featureKey, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesFeaturesInsert(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesFeaturesInsert(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.resources().features(), 'insert',
                       throw_reasons=[GAPI.DUPLICATE, GAPI.INVALID_INPUT, GAPI.INVALID_PARAMETER,
@@ -2124,8 +2127,8 @@ def ResourcesFeaturesInsert(customer, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesFeaturesList(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesFeaturesList(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'nextPageToken,items({0})'.format(kwargs.pop('fields', 'name'))
   try:
     result = callGAPIpages(cd.resources().features(), 'list', 'items',
@@ -2137,8 +2140,8 @@ def ResourcesFeaturesList(customer, **kwargs):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def ResourcesFeaturesRename(customer, oldName, newName):
-  cd = buildGAPIObject(API.DIRECTORY)
+def ResourcesFeaturesRename(gapiDirObj, customer, oldName, newName):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.resources().features(), 'rename',
              throw_reasons=[GAPI.DUPLICATE, GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_INPUT,
@@ -2149,8 +2152,8 @@ def ResourcesFeaturesRename(customer, oldName, newName):
           GAPI.badRequest, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def RoleAssignmentsDelete(customer, roleAssignmentId):
-  cd = buildGAPIObject(API.DIRECTORY)
+def RoleAssignmentsDelete(gapiDirObj, customer, roleAssignmentId):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.roleAssignments(), 'delete',
              throw_reasons=[GAPI.NOT_FOUND, GAPI.OPERATION_NOT_SUPPORTED,
@@ -2161,8 +2164,8 @@ def RoleAssignmentsDelete(customer, roleAssignmentId):
           GAPI.badRequest, GAPI.customerNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def RoleAssignmentsGet(customer, roleAssignmentId):
-  cd = buildGAPIObject(API.DIRECTORY)
+def RoleAssignmentsGet(gapiDirObj, customer, roleAssignmentId):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.roleAssignments(), 'get',
                       throw_reasons=[GAPI.NOT_FOUND, GAPI.OPERATION_NOT_SUPPORTED,
@@ -2173,8 +2176,8 @@ def RoleAssignmentsGet(customer, roleAssignmentId):
           GAPI.badRequest, GAPI.customerNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def RoleAssignmentsInsert(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def RoleAssignmentsInsert(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.roleAssignments(), 'insert',
                       throw_reasons=[GAPI.INVALID_ORGUNIT, GAPI.DUPLICATE, GAPI.INVALID_PARAMETER,
@@ -2185,8 +2188,8 @@ def RoleAssignmentsInsert(customer, **kwargs):
           GAPI.badRequest, GAPI.customerNotFound, GAPI.forbidden, GAPI.internalError) as e:
     return (str(e), False)
 
-def RoleAssignmentsList(customer, userKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def RoleAssignmentsList(gapiDirObj, customer, userKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'nextPageToken,items({0})'.format(kwargs.pop('fields', 'roleAssignmentId,roleId,assignedTo,scopeType,orgUnitId'))
   try:
     result = callGAPIpages(cd.roleAssignments(), 'list', 'items',
@@ -2198,8 +2201,8 @@ def RoleAssignmentsList(customer, userKey, **kwargs):
           GAPI.badRequest, GAPI.customerNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def RolesList(customer, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def RolesList(gapiDirObj, customer, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'nextPageToken,items({0})'.format(kwargs.pop('fields', 'roleId,roleName,roleDescription,isSuperAdminRole,isSystemRole'))
   try:
     result = callGAPIpages(cd.roles(), 'list', 'items',
@@ -2209,8 +2212,8 @@ def RolesList(customer, **kwargs):
   except (GAPI.invalidParameter, GAPI.badRequest, GAPI.customerNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def SchemasDelete(customerId, schemaKey):
-  cd = buildGAPIObject(API.DIRECTORY)
+def SchemasDelete(gapiDirObj, customerId, schemaKey):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.schemas(), 'delete',
              throw_reasons=[GAPI.BAD_REQUEST, GAPI.RESOURCE_NOT_FOUND, GAPI.FORBIDDEN],
@@ -2219,8 +2222,8 @@ def SchemasDelete(customerId, schemaKey):
   except (GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def SchemasGet(customerId, schemaKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def SchemasGet(gapiDirObj, customerId, schemaKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.schemas(), 'get',
                       throw_reasons=[GAPI.INVALID, GAPI.INVALID_PARAMETER,
@@ -2231,8 +2234,8 @@ def SchemasGet(customerId, schemaKey, **kwargs):
           GAPI.badRequest, GAPI.resourceNotFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def SchemasInsert(customerId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def SchemasInsert(gapiDirObj, customerId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.schemas(), 'insert',
                       throw_reasons=[GAPI.DUPLICATE, GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_PARAMETER,
@@ -2243,8 +2246,8 @@ def SchemasInsert(customerId, **kwargs):
           GAPI.badRequest, GAPI.conditionNotMet, GAPI.forbidden, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
-def SchemasList(customerId, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def SchemasList(gapiDirObj, customerId, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'schemas({0})'.format(kwargs.pop('fields', 'schemaId,schemaName,displayName,fields'))
   try:
     result = callGAPIpages(cd.schemas(), 'list', 'schemas',
@@ -2256,8 +2259,8 @@ def SchemasList(customerId, **kwargs):
           GAPI.badRequest, GAPI.forbidden, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
-def SchemasUpdate(customerId, schemaKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def SchemasUpdate(gapiDirObj, customerId, schemaKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.schemas(), 'update',
                       throw_reasons=[GAPI.RESOURCE_NOT_FOUND, GAPI.INVALID_PARAMETER,
@@ -2268,8 +2271,8 @@ def SchemasUpdate(customerId, schemaKey, **kwargs):
           GAPI.badRequest, GAPI.forbidden, GAPI.invalidCustomerId, GAPI.loginRequired) as e:
     return (str(e), False)
 
-def TokensDelete(userKey, clientId):
-  cd = buildGAPIObject(API.DIRECTORY)
+def TokensDelete(gapiDirObj, userKey, clientId):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.tokens(), 'get',
              throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.RESOURCE_NOT_FOUND,
@@ -2284,8 +2287,8 @@ def TokensDelete(userKey, clientId):
           GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def TokensList(userKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def TokensList(gapiDirObj, userKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'items({0})'.format(kwargs.pop('fields', 'clientId,displayText,anonymous,nativeApp,userKey,scopes'))
   try:
     result = callGAPIpages(cd.tokens(), 'list', 'items',
@@ -2297,8 +2300,8 @@ def TokensList(userKey, **kwargs):
           GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.notFound, GAPI.forbidden) as e:
     return (str(e), False)
 
-def UsersDelete(userKey):
-  cd = buildGAPIObject(API.DIRECTORY)
+def UsersDelete(gapiDirObj, userKey):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.users(), 'delete',
              throw_reasons=[GAPI.USER_NOT_FOUND,
@@ -2312,8 +2315,8 @@ def UsersDelete(userKey):
 USER_SKIP_OBJECTS = set(['thumbnailPhotoEtag'])
 USER_TIME_OBJECTS = set(['creationTime', 'deletionTime', 'lastLoginTime'])
 
-def UsersGet(userKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def UsersGet(gapiDirObj, userKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.users(), 'get',
                       throw_reasons=GAPI.USER_GET_THROW_REASONS+[GAPI.INVALID_INPUT, GAPI.INVALID_PARAMETER],
@@ -2323,8 +2326,8 @@ def UsersGet(userKey, **kwargs):
           GAPI.badRequest, GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden, GAPI.systemError) as e:
     return (str(e), False)
 
-def UsersInsert(**kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def UsersInsert(gapiDirObj, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.users(), 'insert',
                       throw_reasons=[GAPI.DUPLICATE,
@@ -2339,8 +2342,8 @@ def UsersInsert(**kwargs):
           GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden) as e:
     return (str(e), False)
 
-def UsersList(**kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def UsersList(gapiDirObj, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'nextPageToken,users({0})'.format(kwargs.pop('fields', 'primaryEmail'))
   try:
     result = callGAPIpages(cd.users(), 'list', 'users',
@@ -2354,8 +2357,8 @@ def UsersList(**kwargs):
           GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden) as e:
     return (str(e), False)
 
-def UsersUndelete(userUID, orgUnitPath):
-  cd = buildGAPIObject(API.DIRECTORY)
+def UsersUndelete(gapiDirObj, userUID, orgUnitPath):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.users(), 'undelete',
              throw_reasons=[GAPI.DELETED_USER_NOT_FOUND, GAPI.INVALID_ORGUNIT, GAPI.BAD_REQUEST, GAPI.INVALID,
@@ -2366,8 +2369,8 @@ def UsersUndelete(userUID, orgUnitPath):
           GAPI.domainNotFound, GAPI.domainCannotUseApis, GAPI.forbidden) as e:
     return (str(e), False)
 
-def UsersUpdate(userKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def UsersUpdate(gapiDirObj, userKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.users(), 'update',
                       throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.DOMAIN_NOT_FOUND, GAPI.FORBIDDEN,
@@ -2380,8 +2383,8 @@ def UsersUpdate(userKey, **kwargs):
           GAPI.invalidOrgunit, GAPI.invalidSchemaValue) as e:
     return (str(e), False)
 
-def UsersAliasesDelete(userKey, alias):
-  cd = buildGAPIObject(API.DIRECTORY)
+def UsersAliasesDelete(gapiDirObj, userKey, alias):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.users().aliases(), 'delete',
              throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.INVALID_RESOURCE, GAPI.INVALID,
@@ -2392,8 +2395,8 @@ def UsersAliasesDelete(userKey, alias):
           GAPI.badRequest, GAPI.conditionNotMet, GAPI.forbidden) as e:
     return (str(e), False)
 
-def UsersAliasesInsert(userKey, alias, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def UsersAliasesInsert(gapiDirObj, userKey, alias, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   try:
     result = callGAPI(cd.users().aliases(), 'insert',
                       throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.DUPLICATE,
@@ -2406,8 +2409,8 @@ def UsersAliasesInsert(userKey, alias, **kwargs):
           GAPI.badRequest, GAPI.conditionNotMet, GAPI.forbidden, GAPI.limitExceeded) as e:
     return (str(e), False)
 
-def UsersAliasesList(userKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def UsersAliasesList(gapiDirObj, userKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'aliases({0})'.format(kwargs.pop('fields', 'email'))
   try:
     result = callGAPIpages(cd.users().aliases(), 'list', 'aliases',
@@ -2421,8 +2424,8 @@ def UsersAliasesList(userKey, **kwargs):
           GAPI.badRequest, GAPI.conditionNotMet, GAPI.forbidden) as e:
     return (str(e), False)
 
-def VerificationCodesGenerate(userKey):
-  cd = buildGAPIObject(API.DIRECTORY)
+def VerificationCodesGenerate(gapiDirObj, userKey):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.verificationCodes(), 'generate',
              throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.INVALID, GAPI.INVALID_INPUT],
@@ -2431,8 +2434,8 @@ def VerificationCodesGenerate(userKey):
   except (GAPI.userNotFound, GAPI.invalid, GAPI.invalidInput) as e:
     return (str(e), False)
 
-def VerificationCodesInvalidate(userKey):
-  cd = buildGAPIObject(API.DIRECTORY)
+def VerificationCodesInvalidate(gapiDirObj, userKey):
+  cd = useGAPIObject(gapiDirObj)
   try:
     callGAPI(cd.verificationCodes(), 'invalidate',
              throw_reasons=[GAPI.USER_NOT_FOUND, GAPI.INVALID, GAPI.INVALID_INPUT],
@@ -2441,8 +2444,8 @@ def VerificationCodesInvalidate(userKey):
   except (GAPI.userNotFound, GAPI.invalid, GAPI.invalidInput) as e:
     return (str(e), False)
 
-def VerificationCodesList(userKey, **kwargs):
-  cd = buildGAPIObject(API.DIRECTORY)
+def VerificationCodesList(gapiDirObj, userKey, **kwargs):
+  cd = useGAPIObject(gapiDirObj)
   fields = 'items({0})'.format(kwargs.pop('fields', 'userId,verificationCode'))
   try:
     result = callGAPIpages(cd.verificationCodes(), 'list', 'items',

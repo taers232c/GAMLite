@@ -1,237 +1,237 @@
-def ASPsDelete(userKey, codeId):
+def ASPsDelete(gapiDirObj, userKey, codeId):
 https://developers.google.com/admin-sdk/directory/v1/reference/asps/delete
 
-def ASPsList(userKey, **kwargs):
+def ASPsList(gapiDirObj, userKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/asps/list
 
-def ChromeosdevicesAction(customerId, resourceId, **kwargs):
+def ChromeosdevicesAction(gapiDirObj, customerId, resourceId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/chromeosdevices/action
 
-def ChromeosdevicesGet(customerId, deviceId, **kwargs):
+def ChromeosdevicesGet(gapiDirObj, customerId, deviceId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/chromeosdevices/get
 
-def ChromeosdevicesList(customerId, **kwargs):
+def ChromeosdevicesList(gapiDirObj, customerId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/chromeosdevices/list
 
-def ChromeosdevicesMoveDevicesToOu(customerId, orgUnitPath, deviceIds):
+def ChromeosdevicesMoveDevicesToOu(gapiDirObj, customerId, orgUnitPath, deviceIds):
 https://developers.google.com/admin-sdk/directory/v1/reference/chromeosdevices/moveDevicesToOu
 
-def ChromeosdevicesUpdate(customerId, deviceId, **kwargs):
+def ChromeosdevicesUpdate(gapiDirObj, customerId, deviceId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/chromeosdevices/update
 
-def CustomersGet(customerKey, **kwargs):
+def CustomersGet(gapiDirObj, customerKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/customers/get
 
-def CustomersPatch(customerKey, **kwargs):
+def CustomersPatch(gapiDirObj, customerKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/customers/patch
 
-def DomainsDelete(customer, domainName):
+def DomainsDelete(gapiDirObj, customer, domainName):
 https://developers.google.com/admin-sdk/directory/v1/reference/domains/delete
 
-def DomainsGet(customer, domainName, **kwargs):
+def DomainsGet(gapiDirObj, customer, domainName, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/domains/get
 
-def DomainsInsert(customer, **kwargs):
+def DomainsInsert(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/domains/insert
 
-def DomainsList(customer, **kwargs):
+def DomainsList(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/domains/list
 
-def DomainAliasesDelete(customer, domainAliasName):
+def DomainAliasesDelete(gapiDirObj, customer, domainAliasName):
 https://developers.google.com/admin-sdk/directory/v1/reference/domainAliases/delete
 
-def DomainAliasesGet(customer, domainAliasName, **kwargs):
+def DomainAliasesGet(gapiDirObj, customer, domainAliasName, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/domainAliases/get
 
-def DomainAliasesInsert(customer, **kwargs):
+def DomainAliasesInsert(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/domainAliases/insert
 
-def DomainAliasesList(customer, **kwargs):
+def DomainAliasesList(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/domainAliases/list
 
-def GroupsDelete(groupKey):
+def GroupsDelete(gapiDirObj, groupKey):
 https://developers.google.com/admin-sdk/directory/v1/reference/domainAliases/list
 
-def GroupsGet(groupKey, **kwargs):
+def GroupsGet(gapiDirObj, groupKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/groups/get
 
-def GroupsInsert(**kwargs):
+def GroupsInsert(gapiDirObj, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/groups/insert
 
-def GroupsList(**kwargs):
+def GroupsList(gapiDirObj, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/groups/list
 
-def GroupsUpdate(groupKey, **kwargs):
+def GroupsUpdate(gapiDirObj, groupKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/groups/update
 
-def GroupsAliasesDelete(groupKey, alias):
+def GroupsAliasesDelete(gapiDirObj, groupKey, alias):
 https://developers.google.com/admin-sdk/directory/v1/reference/groups/aliases/delete
 
-def GroupsAliasesInsert(groupKey, alias, **kwargs):
+def GroupsAliasesInsert(gapiDirObj, groupKey, alias, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/groups/aliases/insert
 
-def GroupsAliasesList(groupKey, **kwargs):
+def GroupsAliasesList(gapiDirObj, groupKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/groups/aliases/list
 
-def MembersDelete(groupKey, memberKey):
+def MembersDelete(gapiDirObj, groupKey, memberKey):
 https://developers.google.com/admin-sdk/directory/v1/reference/groups/aliases/list
 
-def MembersGet(groupKey, memberKey, **kwargs):
+def MembersGet(gapiDirObj, groupKey, memberKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/members/get
 
-def MembersInsert(groupKey, **kwargs):
+def MembersInsert(gapiDirObj, groupKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/members/insert
 
-def MembersList(groupKey, **kwargs):
+def MembersList(gapiDirObj, groupKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/members/list
 
-def MembersPatch(groupKey, memberKey, **kwargs):
+def MembersPatch(gapiDirObj, groupKey, memberKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/members/patch
 
-def MobiledevicesAction(customerId, resourceId, **kwargs):
+def MobiledevicesAction(gapiDirObj, customerId, resourceId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/mobiledevices/action
 
-def MobiledevicesDelete(customerId, resourceid):
+def MobiledevicesDelete(gapiDirObj, customerId, resourceid):
 https://developers.google.com/admin-sdk/directory/v1/reference/mobiledevices/delete
 
-def MobiledevicesGet(customerId, resourceid, **kwargs):
+def MobiledevicesGet(gapiDirObj, customerId, resourceid, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/mobiledevices/get
 
-def MobiledevicesList(customerId, **kwargs):
+def MobiledevicesList(gapiDirObj, customerId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/mobiledevices/list
 
-def OrgunitsDelete(customerId, orgUnitPath):
+def OrgunitsDelete(gapiDirObj, customerId, orgUnitPath):
 https://developers.google.com/admin-sdk/directory/v1/reference/mobiledevices/list
 
-def OrgunitsGet(customerId, orgUnitPath, **kwargs):
+def OrgunitsGet(gapiDirObj, customerId, orgUnitPath, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/orgunits/get
 
-def OrgunitsInsert(customerId, **kwargs):
+def OrgunitsInsert(gapiDirObj, customerId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/orgunits/get
 
-def OrgunitsList(customerId, **kwargs):
+def OrgunitsList(gapiDirObj, customerId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/orgunits/list
 
-def OrgunitsUpdate(customerId, orgUnitPath, **kwargs):
+def OrgunitsUpdate(gapiDirObj, customerId, orgUnitPath, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/orgunits/update
 
-def PrivilegesList(customer, **kwargs):
+def PrivilegesList(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/privileges/list
 
-def ResourcesBuildingsDelete(customer, buildingId):
+def ResourcesBuildingsDelete(gapiDirObj, customer, buildingId):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/buildings/delete
 
-def ResourcesBuildingsGet(customer, buildingId, **kwargs):
+def ResourcesBuildingsGet(gapiDirObj, customer, buildingId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/buildings/get
 
-def ResourcesBuildingsInsert(customer, **kwargs):
+def ResourcesBuildingsInsert(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/buildings/insert
 
-def ResourcesBuildingsList(customer, **kwargs):
+def ResourcesBuildingsList(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/buildings/list
 
-def ResourcesBuildingsPatch(customer, buildingId, **kwargs):
+def ResourcesBuildingsPatch(gapiDirObj, customer, buildingId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/buildings/patch
 
-def ResourcesCalendarsDelete(customer, calendarResourceId):
+def ResourcesCalendarsDelete(gapiDirObj, customer, calendarResourceId):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/calendars/delete
 
-def ResourcesCalendarsGet(customer, calendarResourceId, **kwargs):
+def ResourcesCalendarsGet(gapiDirObj, customer, calendarResourceId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/calendars/get
 
-def ResourcesCalendarsInsert(customer, **kwargs):
+def ResourcesCalendarsInsert(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/calendars/insert
 
-def ResourcesCalendarsList(customer, **kwargs):
+def ResourcesCalendarsList(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/calendars/list
 
-def ResourcesCalendarsPatch(customer, calendarResourceId, **kwargs):
+def ResourcesCalendarsPatch(gapiDirObj, customer, calendarResourceId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/calendars/patch
 
-def ResourcesFeaturesDelete(customer, featureKey):
+def ResourcesFeaturesDelete(gapiDirObj, customer, featureKey):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/features/delete
 
-def ResourcesFeaturesGet(customer, featureKey, **kwargs):
+def ResourcesFeaturesGet(gapiDirObj, customer, featureKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/features/get
 
-def ResourcesFeaturesInsert(customer, **kwargs):
+def ResourcesFeaturesInsert(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/features/insert
 
-def ResourcesFeaturesList(customer, **kwargs):
+def ResourcesFeaturesList(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/features/list
 
-def ResourcesFeaturesRename(customer, oldName, newName):
+def ResourcesFeaturesRename(gapiDirObj, customer, oldName, newName):
 https://developers.google.com/admin-sdk/directory/v1/reference/resources/features/rename
 
-def RoleAssignmentsDelete(customer, roleAssignmentId):
+def RoleAssignmentsDelete(gapiDirObj, customer, roleAssignmentId):
 https://developers.google.com/admin-sdk/directory/v1/reference/roleAssignments/delete
 
-def RoleAssignmentsGet(customer, roleAssignmentId):
+def RoleAssignmentsGet(gapiDirObj, customer, roleAssignmentId):
 https://developers.google.com/admin-sdk/directory/v1/reference/roleAssignments/get
 
-def RoleAssignmentsInsert(customer, **kwargs):
+def RoleAssignmentsInsert(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/roleAssignments/insert
 
-def RoleAssignmentsList(customer, userKey, **kwargs):
+def RoleAssignmentsList(gapiDirObj, customer, userKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/roleAssignments/list
 
-def RolesList(customer, **kwargs):
+def RolesList(gapiDirObj, customer, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/roles/list
 
-def SchemasDelete(customerId, schemaKey):
+def SchemasDelete(gapiDirObj, customerId, schemaKey):
 https://developers.google.com/admin-sdk/directory/v1/reference/schemas/delete
 
-def SchemasGet(customerId, schemaKey, **kwargs):
+def SchemasGet(gapiDirObj, customerId, schemaKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/schemas/get
 
-def SchemasInsert(customerId, **kwargs):
+def SchemasInsert(gapiDirObj, customerId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/schemas/insert
 
-def SchemasList(customerId, **kwargs):
+def SchemasList(gapiDirObj, customerId, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/schemas/list
 
-def SchemasUpdate(customerId, schemaKey, **kwargs):
+def SchemasUpdate(gapiDirObj, customerId, schemaKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/schemas/update
 
-def TokensDelete(userKey, clientId):
+def TokensDelete(gapiDirObj, userKey, clientId):
 https://developers.google.com/admin-sdk/directory/v1/reference/tokens/delete
 
-def TokensList(userKey, **kwargs):
+def TokensList(gapiDirObj, userKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/tokens/list
 
-def UsersDelete(userKey):
+def UsersDelete(gapiDirObj, userKey):
 https://developers.google.com/admin-sdk/directory/v1/reference/users/delete
 
-def UsersGet(userKey, **kwargs):
+def UsersGet(gapiDirObj, userKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/users/get
 
-def UsersInsert(**kwargs):
+def UsersInsert(gapiDirObj, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/users/insert
 
-def UsersList(**kwargs):
+def UsersList(gapiDirObj, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/users/list
 
-def UsersUndelete(userUID, orgUnitPath):
+def UsersUndelete(gapiDirObj, userUID, orgUnitPath):
 https://developers.google.com/admin-sdk/directory/v1/reference/users/undelete
 
-def UsersUpdate(userKey, **kwargs):
+def UsersUpdate(gapiDirObj, userKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/users/update
 
-def UsersAliasesDelete(userKey, alias):
+def UsersAliasesDelete(gapiDirObj, userKey, alias):
 https://developers.google.com/admin-sdk/directory/v1/reference/users/aliases/delete
 
-def UsersAliasesInsert(userKey, alias, **kwargs):
+def UsersAliasesInsert(gapiDirObj, userKey, alias, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/users/aliases/insert
 
-def UsersAliasesList(userKey, **kwargs):
+def UsersAliasesList(gapiDirObj, userKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/users/aliases/list
 
-def VerificationCodesGenerate(userKey):
+def VerificationCodesGenerate(gapiDirObj, userKey):
 https://developers.google.com/admin-sdk/directory/v1/reference/verificationCodes/generate
 
-def VerificationCodesInvalidate(userKey):
+def VerificationCodesInvalidate(gapiDirObj, userKey):
 https://developers.google.com/admin-sdk/directory/v1/reference/verificationCodes/invalidate
 
-def VerificationCodesList(userKey, **kwargs):
+def VerificationCodesList(gapiDirObj, userKey, **kwargs):
 https://developers.google.com/admin-sdk/directory/v1/reference/verificationCodes/list
 
