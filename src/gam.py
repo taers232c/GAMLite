@@ -2665,6 +2665,65 @@ def DrivePermissionsUpdate(gapiDriveObj, fileId, permissionId, **kwargs):
           GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
     return str(e)
 
+DRIVE_REVISIONS_TIME_OBJECTS = set(['modifiedTime'])
+
+def DriveRevisionsDelete(gapiDriveObj, fileId, revisionId):
+  drive = useGAPIServiceObject(gapiDriveObj)
+  try:
+    callGAPI(drive.revisions(), 'delete',
+             throw_reasons=GAPI.DRIVE_ACCESS_THROW_REASONS+[GAPI.BAD_REQUEST, GAPI.REVISION_NOT_FOUND, GAPI.REVISION_DELETION_NOT_SUPPORTED,
+                                                            GAPI.CANNOT_DELETE_ONLY_REVISION, GAPI.REVISIONS_NOT_SUPPORTED],
+             fileId=fileId, revisionId=revisionId)
+    return {}
+  except (GAPI.fileNotFound, GAPI.forbidden, GAPI.internalError, GAPI.insufficientFilePermissions, GAPI.unknownError,
+          GAPI.badRequest, GAPI.revisionNotFound, GAPI.revisionDeletionNotSupported,
+          GAPI.cannotDeleteOnlyRevision, GAPI.revisionsNotSupported,
+          GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
+    return str(e)
+
+def DriveRevisionsGet(gapiDriveObj, fileId, revisionId, **kwargs):
+  drive = useGAPIServiceObject(gapiDriveObj)
+  try:
+    result = callGAPI(drive.revisions(), 'get',
+                      throw_reasons=GAPI.DRIVE_ACCESS_THROW_REASONS+[GAPI.BAD_REQUEST, GAPI.REVISION_NOT_FOUND,
+                                                                     GAPI.INSUFFICIENT_ADMINISTRATOR_PRIVILEGES, GAPI.INVALID_PARAMETER],
+                      fileId=fileId, revisionId=revisionId, **kwargs)
+    return _cleanJSON(result, timeObjects=DRIVE_REVISIONS_TIME_OBJECTS)
+  except (GAPI.fileNotFound, GAPI.forbidden, GAPI.internalError, GAPI.insufficientFilePermissions, GAPI.unknownError,
+          GAPI.badRequest, GAPI.revisionNotFound,
+          GAPI.insufficientAdministratorPrivileges, GAPI.invalidParameter,
+          GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
+    return str(e)
+
+
+def DriveRevisionsList(gapiDriveObj, fileId, **kwargs):
+  drive = useGAPIServiceObject(gapiDriveObj)
+  fields = 'nextPageToken,revisions({0})'.format(kwargs.pop('fields', 'id'))
+  try:
+    result = callGAPIpages(drive.revisions(), 'list', 'revisions',
+                           throw_reasons=GAPI.DRIVE_ACCESS_THROW_REASONS+[GAPI.BAD_REQUEST, GAPI.INVALID_PARAMETER, GAPI.REVISIONS_NOT_SUPPORTED],
+                           fileId=fileId, fields=fields, **kwargs)
+    return _cleanJSON(result, timeObjects=DRIVE_REVISIONS_TIME_OBJECTS)
+  except (GAPI.fileNotFound, GAPI.forbidden, GAPI.internalError, GAPI.insufficientFilePermissions, GAPI.unknownError,
+          GAPI.badRequest, GAPI.invalidParameter, GAPI.revisionsNotSupported,
+          GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
+    return str(e)
+
+
+def DriveRevisionsUpdate(gapiDriveObj, fileId, revisionId, **kwargs):
+  drive = useGAPIServiceObject(gapiDriveObj)
+  try:
+    result = callGAPI(drive.revisions(), 'update',
+                      throw_reasons=GAPI.DRIVE_ACCESS_THROW_REASONS+[GAPI.BAD_REQUEST, GAPI.INVALID_PARAMETER,
+                                                                     GAPI.REVISION_NOT_FOUND, GAPI.REVISIONS_NOT_SUPPORTED],
+                      fileId=fileId, revisionId=revisionId, **kwargs)
+    return _cleanJSON(result, timeObjects=DRIVE_REVISIONS_TIME_OBJECTS)
+  except (GAPI.fileNotFound, GAPI.forbidden, GAPI.internalError, GAPI.insufficientFilePermissions, GAPI.unknownError,
+          GAPI.badRequest, GAPI.invalidParameter,
+          GAPI.revisionNotFound, GAPI.revisionsNotSupported,
+          GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
+    return str(e)
+
 # Gmail API
 
 def GmailUsersGetProfile(gapiGmailObj):
