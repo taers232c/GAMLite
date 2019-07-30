@@ -242,8 +242,26 @@ https://developers.google.com/admin-sdk/directory/v1/reference/verificationCodes
 def DriveAbout(gapiDriveObj, **kwargs):
 https://developers.google.com/drive/api/v3/reference/about/get
 
+def DriveFilesCreate(gapiDriveObj, **kwargs):
+https://developers.google.com/drive/api/v3/reference/files/create
+
+def DriveFilesCopy(gapiDriveObj, fileId, **kwargs):
+https://developers.google.com/drive/api/v3/reference/files/copy
+
+def DriveFilesDelete(gapiDriveObj, fileId, **kwargs):
+https://developers.google.com/drive/api/v3/reference/files/delete
+
+def DriveFilesEmptyTrash(gapiDriveObj):
+https://developers.google.com/drive/api/v3/reference/files/emptyTrash
+
+def DriveFilesGet(gapiDriveObj, fileId, **kwargs):
+https://developers.google.com/drive/api/v3/reference/files/get
+
 def DriveFilesList(gapiDriveObj, **kwargs):
 https://developers.google.com/drive/api/v3/reference/files/list
+
+def DriveFilesUpdate(gapiDriveObj, fileId, **kwargs):
+https://developers.google.com/drive/api/v3/reference/files/update
 
 def DrivePermissionsCreate(gapiDriveObj, fileId, **kwargs):
 https://developers.google.com/drive/api/v3/reference/permissions/create

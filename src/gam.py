@@ -2481,6 +2481,72 @@ def DriveAbout(gapiDriveObj, **kwargs):
 
 DRIVE_FILES_TIME_OBJECTS = set(['createdTime,viewedByMeTime,modifiedByMeTime,modifiedTime,sharedWithMeTime'])
 
+def DriveFilesCreate(gapiDriveObj, **kwargs):
+  drive = useGAPIServiceObject(gapiDriveObj)
+  try:
+    result = callGAPI(drive.files(), 'create',
+                      throw_reasons=GAPI.DRIVE_USER_THROW_REASONS+[GAPI.FORBIDDEN, GAPI.INSUFFICIENT_PERMISSIONS,
+                                                                   GAPI.INVALID, GAPI.BAD_REQUEST,
+                                                                   GAPI.FILE_NOT_FOUND, GAPI.UNKNOWN_ERROR, GAPI.INVALID_PARAMETER,
+                                                                   GAPI.TEAMDRIVES_SHARING_RESTRICTION_NOT_ALLOWED],
+                      **kwargs)
+    return _cleanJSON(result, timeObjects=DRIVE_FILES_TIME_OBJECTS)
+  except (GAPI.forbidden, GAPI.insufficientFilePermissions,
+          GAPI.invalid, GAPI.badRequest,
+          GAPI.fileNotFound, GAPI.unknownError, GAPI.invalidParameter,
+          GAPI.teamDrivesSharingRestrictionNotAllowed,
+          GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
+    return str(e)
+
+
+def DriveFilesCopy(gapiDriveObj, fileId, **kwargs):
+  drive = useGAPIServiceObject(gapiDriveObj)
+  try:
+    result = callGAPI(drive.files(), 'copy',
+                      throw_reasons=GAPI.DRIVE_COPY_THROW_REASONS+[GAPI.BAD_REQUEST, GAPI.INVALID_PARAMETER],
+                      fileId=fileId, **kwargs)
+    return _cleanJSON(result, timeObjects=DRIVE_FILES_TIME_OBJECTS)
+  except (GAPI.fileNotFound, GAPI.forbidden, GAPI.internalError, GAPI.insufficientFilePermissions,
+          GAPI.unknownError, GAPI.cannotCopyFile, GAPI.badRequest, GAPI.fileNeverWritable,
+          GAPI.badRequest, GAPI.invalidParameter,
+          GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
+    return str(e)
+
+def DriveFilesDelete(gapiDriveObj, fileId, **kwargs):
+  drive = useGAPIServiceObject(gapiDriveObj)
+  try:
+    callGAPI(drive.files(), 'delete',
+             throw_reasons=GAPI.DRIVE_ACCESS_THROW_REASONS+GAPI.DRIVE3_DELETE_ACL_THROW_REASONS,
+             fileId=fileId, **kwargs)
+    return {}
+  except (GAPI.fileNotFound, GAPI.forbidden, GAPI.internalError, GAPI.insufficientFilePermissions, GAPI.unknownError,
+          GAPI.badRequest, GAPI.cannotRemoveOwner, GAPI.cannotModifyInheritedTeamDrivePermission,
+          GAPI.insufficientAdministratorPrivileges, GAPI.sharingRateLimitExceeded,
+          GAPI.notFound, GAPI.permissionNotFound,
+          GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
+    return str(e)
+
+def DriveFilesEmptyTrash(gapiDriveObj):
+  drive = useGAPIServiceObject(gapiDriveObj)
+  try:
+    callGAPI(drive.files(), 'emptyTrash',
+             throw_reasons=GAPI.DRIVE_USER_THROW_REASONS)
+    return {}
+  except (GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
+    return str(e)
+
+def DriveFilesGet(gapiDriveObj, fileId, **kwargs):
+  drive = useGAPIServiceObject(gapiDriveObj)
+  try:
+    result = callGAPI(drive.files(), 'get',
+                      throw_reasons=GAPI.DRIVE_GET_THROW_REASONS+[GAPI.INVALID_PARAMETER],
+                      fileId=fileId, **kwargs)
+    return _cleanJSON(result, timeObjects=DRIVE_PERMISSIONS_TIME_OBJECTS)
+  except (GAPI.fileNotFound, GAPI.forbidden, GAPI.internalError, GAPI.insufficientFilePermissions, GAPI.unknownError,
+          GAPI.invalidParameter,
+          GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
+    return str(e)
+
 def DriveFilesList(gapiDriveObj, **kwargs):
   drive = useGAPIServiceObject(gapiDriveObj)
   fields = 'nextPageToken,files({0})'.format(kwargs.pop('fields', 'id'))
@@ -2497,6 +2563,22 @@ def DriveFilesList(gapiDriveObj, **kwargs):
           GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
     return str(e)
 
+def DriveFilesUpdate(gapiDriveObj, fileId, **kwargs):
+  drive = useGAPIServiceObject(gapiDriveObj)
+  try:
+    result = callGAPI(drive.files(), 'update',
+                      throw_reasons=GAPI.DRIVE_ACCESS_THROW_REASONS+[GAPI.BAD_REQUEST, GAPI.CANNOT_MODIFY_VIEWERS_CAN_COPY_CONTENT,
+                                                                     GAPI.INVALID_PARAMETER,
+                                                                     GAPI.TEAMDRIVES_PARENT_LIMIT, GAPI.TEAMDRIVES_FOLDER_MOVE_IN_NOT_SUPPORTED,
+                                                                     GAPI.TEAMDRIVES_SHARING_RESTRICTION_NOT_ALLOWED],
+                      fileId=fileId, **kwargs)
+    return _cleanJSON(result, timeObjects=DRIVE_FILES_TIME_OBJECTS)
+  except (GAPI.fileNotFound, GAPI.forbidden, GAPI.internalError, GAPI.insufficientFilePermissions,
+          GAPI.unknownError, GAPI.invalid,
+          GAPI.badRequest, GAPI.cannotModifyViewersCanCopyContent, GAPI.invalidParameter,
+          GAPI.teamDrivesParentLimit, GAPI.teamDrivesFolderMoveInNotSupported, GAPI.teamDrivesSharingRestrictionNotAllowed,
+          GAPI.serviceNotAvailable, GAPI.authError, GAPI.domainPolicy) as e:
+    return str(e)
 
 DRIVE_PERMISSIONS_TIME_OBJECTS = set(['expirationTime'])
 

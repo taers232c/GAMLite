@@ -31,6 +31,7 @@ CONTACTS = 'contacts'
 DATATRANSFER = 'datatransfer'
 DIRECTORY = 'directory'
 DRIVE = 'drive'
+DRIVE2 = 'drive2'
 DRIVE3 = 'drive3'
 DRIVEACTIVITY = 'driveactivity'
 EMAIL_AUDIT = 'email-audit'
@@ -119,8 +120,10 @@ _INFO = {
              'localjson': True},
   DATATRANSFER: {'version': 'datatransfer_v1', 'v2discovery': False},
   DIRECTORY: {'version': 'directory_v1', 'v2discovery': False},
-  DRIVE: {'version': 'v2', 'v2discovery': False,
+  DRIVE2: {'version': 'v2', 'v2discovery': False,
           'svcacctscopes': ['https://www.googleapis.com/auth/drive',]},
+  DRIVE: {'version': 'v3', 'v2discovery': False,
+           'svcacctscopes': ['https://www.googleapis.com/auth/drive',]},
   DRIVE3: {'version': 'v3', 'v2discovery': False,
            'svcacctscopes': ['https://www.googleapis.com/auth/drive',]},
   DRIVEACTIVITY: {'version': 'v2', 'v2discovery': True,
@@ -376,7 +379,7 @@ def getVersion(api):
   v2discovery = _INFO[api]['v2discovery']
   if api in [DIRECTORY, REPORTS, DATATRANSFER]:
     api = ADMIN
-  elif api == DRIVE3:
+  elif api in [DRIVE3, DRIVE2]:
     api = DRIVE
   return (api, version, '{0}-{1}'.format(api, version), v2discovery)
 
