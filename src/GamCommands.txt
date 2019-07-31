@@ -1,3 +1,68 @@
+# Configuration
+def SetGlobalVariables(configFile, sectionName=None, config=None, save=False, verify=False):
+configFile - full path to gam.cfg
+sectionName - optional section in gam.cfg
+config - dictionary of keyword-value pairs, {"debug_level: "1"}
+save - should changes be saved
+verify - should config file be displayed
+
+# APIs
+from gamlib import glapi as API
+
+ADMIN = 'admin'
+ALERTCENTER = 'alertcenter'
+APPSACTIVITY = 'appsactivity'
+CALENDAR = 'calendar'
+CLASSROOM = 'classroom'
+CLOUDPRINT = 'cloudprint'
+CONTACTS = 'contacts'
+DATATRANSFER = 'datatransfer'
+DIRECTORY = 'directory'
+DRIVE = 'drive'
+DRIVE2 = 'drive2'
+DRIVE3 = 'drive3'
+DRIVEACTIVITY = 'driveactivity'
+EMAIL_AUDIT = 'email-audit'
+EMAIL_SETTINGS = 'email-settings'
+GMAIL = 'gmail'
+GROUPSMIGRATION = 'groupsmigration'
+GROUPSSETTINGS = 'groupssettings'
+LICENSING = 'licensing'
+OAUTH2 = 'oauth2'
+PEOPLE = 'people'
+PUBSUB = 'pubsub'
+REPORTS = 'reports'
+RESELLER = 'reseller'
+SHEETS = 'sheets'
+SITES = 'sites'
+SITEVERIFICATION = 'siteVerification'
+STORAGE = 'storage'
+VAULT = 'vault'
+
+# Client Authentication
+def buildGAPIObject(api):
+gapiDirObj = gam.buildGAPIObject(API.DIRECTORY)
+
+None is returned on an error
+Pass the returned value as the first argument to all client API calls
+
+# Service Account Authentication
+def buildGAPIServiceObject(api, user):
+gapiDriveObj = gam.buildGAPIServiceObject(API.DRIVE3, 'user@domain.com')
+
+None is returned on an error
+Pass the returned value as the first argument to all service account API calls
+
+# API arguments
+Named arguments are required.
+**kwargs represents other arguments; see the API documentation.
+
+Many/most API calls take a `fields` argument; this is a comma separated list of field names.
+For top-level fields, specify the field name, e.g., primaryEmail
+For sub-level fields, specify top level field name and the sub-level field name(s), e.g., name(givenName,familyName)
+
+Many of the List APIs take a `pageToken` argument, do not specify it, GAMLite will automatically handle it.
+
 # Directory API
 
 def ASPsDelete(gapiDirObj, userKey, codeId):
@@ -277,18 +342,6 @@ https://developers.google.com/drive/api/v3/reference/permissions/list
 
 def DrivePermissionsUpdate(gapiDriveObj, fileId, permissionId, **kwargs):
 https://developers.google.com/drive/api/v3/reference/permissions/update
-
-def DriveRevisionsDelete(gapiDriveObj, fileId, revisionId):
-https://developers.google.com/drive/api/v3/reference/revisions/delete
-
-def DriveRevisionsGet(gapiDriveObj, fileId, revisionId, **kwargs):
-https://developers.google.com/drive/api/v3/reference/revisions/get
-
-def DriveRevisionsList(gapiDriveObj, fileId, **kwargs):
-https://developers.google.com/drive/api/v3/reference/revisions/list
-
-def DriveRevisionsUpdate(gapiDriveObj, fileId, revisionId, **kwargs):
-https://developers.google.com/drive/api/v3/reference/revisions/update
 
 # Gmail API
 
