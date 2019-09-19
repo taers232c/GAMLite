@@ -1,3 +1,7 @@
+1.01.00
+
+Added Gmail API.
+
 1.00.00
 
 Initial release

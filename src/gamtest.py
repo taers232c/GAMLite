@@ -47,6 +47,46 @@ print('\nGmailUsersGetProfile')
 result = gam.GmailUsersGetProfile(gapiGmailObj)
 print(result)
 
+print('\nGmailLabelsList')
+result = gam.GmailLabelsList(gapiGmailObj)
+print(result)
+
+print('\nGmailSettingsGetAutoForwarding')
+result = gam.GmailSettingsGetAutoForwarding(gapiGmailObj)
+print(result)
+
+print('\nGmailSettingsGetImap')
+result = gam.GmailSettingsGetImap(gapiGmailObj)
+print(result)
+
+print('\nGmailSettingsGetLanguage')
+result = gam.GmailSettingsGetLanguage(gapiGmailObj)
+print(result)
+
+print('\nGmailSettingsGetPop')
+result = gam.GmailSettingsGetPop(gapiGmailObj)
+print(result)
+
+print('\nGmailSettingsGetVacation')
+result = gam.GmailSettingsGetVacation(gapiGmailObj)
+print(result)
+
+print('\nGmailSettingsDelegatesList')
+result = gam.GmailSettingsDelegatesList(gapiGmailObj)
+print(result)
+
+print('\nGmailSettingsFiltersList')
+result = gam.GmailSettingsFiltersList(gapiGmailObj)
+print(result)
+
+print('\nGmailSettingsForwardingAddressesList')
+result = gam.GmailSettingsForwardingAddressesList(gapiGmailObj)
+print(result)
+
+print('\nGmailSettingsSendAsList')
+result = gam.GmailSettingsSendAsList(gapiGmailObj)
+print(result)
+
 # Directory API
 gapiDirObj = gam.buildGAPIObject(API.DIRECTORY)
 

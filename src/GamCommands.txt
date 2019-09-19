@@ -348,3 +348,197 @@ https://developers.google.com/drive/api/v3/reference/permissions/update
 def GmailUsersGetProfile(gapiGmailObj):
 https://developers.google.com/gmail/api/v1/reference/users/getProfile
 
+def GmailDraftsCreate(gapiGmailObj, uploadType, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/drafts/create
+
+def GmailDraftsDelete(gapiGmailObj, draftId):
+https://developers.google.com/gmail/api/v1/reference/users/drafts/delete
+
+def GmailDraftsGet(gapiGmailObj, draftId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/drafts/get
+
+def GmailDraftsList(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/drafts/list
+
+def GmailDraftsSend(gapiGmailObj, uploadType, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/drafts/send
+
+def GmailDraftsUpdate(gapiGmailObj, draftId, uploadType, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/drafts/update
+
+def GmailHistoryList(gapiGmailObj, startHistoryId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/history/list
+
+def GmailLabelsCreate(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/labels/create
+
+def GmailLabelsDelete(gapiGmailObj, labelId):
+https://developers.google.com/gmail/api/v1/reference/users/labels/delete
+
+def GmailLabelsGet(gapiGmailObj, labelId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/labels/get
+
+def GmailLabelsList(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/labels/list
+
+def GmailLabelsPatch(gapiGmailObj, labelId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/labels/patch
+
+def GmailLabelsUpdate(gapiGmailObj, labelId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/labels/update
+
+def GmailMessagesBatchDelete(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/batchDelete
+
+def GmailMessagesBatchModify(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/batchModify
+
+def GmailMessagesDelete(gapiGmailObj, messageId):
+https://developers.google.com/gmail/api/v1/reference/users/messages/delete
+
+def GmailMessagesGet(gapiGmailObj, messageId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/get
+
+def GmailMessagesImport(gapiGmailObj, uploadType, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/import
+
+def GmailMessagesInsert(gapiGmailObj, uploadType, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/insert
+
+def GmailMessagesList(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/list
+
+def GmailMessagesModify(gapiGmailObj, messageId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/modify
+
+def GmailMessagesSend(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/send
+
+def GmailMessagesTrash(gapiGmailObj, messageId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/trash
+
+def GmailMessagesUntrash(gapiGmailObj, messageId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/untrash
+
+def GmailMessagesAttachmentsGet(gapiGmailObj, messageId, attachmentId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/messages/attachments/get
+
+def GmailSettingsGetAutoForwarding(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/getAutoForwarding
+
+def GmailSettingsGetImap(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/getImap
+
+def GmailSettingsGetLanguage(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/getLanguage
+
+def GmailSettingsGetPop(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/getPop
+
+def GmailSettingsGetVacation(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/getVacation
+
+def GmailSettingsUpdateAutoForwarding(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/updateAutoForwarding
+
+def GmailSettingsUpdateImap(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/updateImap
+
+def GmailSettingsUpdateLanguage(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/updateLanguage
+
+def GmailSettingsUpdatePop(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/updatePop
+
+def GmailSettingsUpdateVacation(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/updateVacation
+
+def GmailSettingsDelegatesCreate(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/delegates/create
+
+def GmailSettingsDelegatesDelete(gapiGmailObj, delegateEmail):
+https://developers.google.com/gmail/api/v1/reference/users/settings/delegatesdelete
+
+def GmailSettingsDelegatesGet(gapiGmailObj, delegateEmail, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/delegates/get
+
+def GmailSettingsDelegatesList(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/delegates/list
+
+def GmailSettingsFiltersCreate(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/filters/create
+
+def GmailSettingsFiltersDelete(gapiGmailObj, filterId):
+https://developers.google.com/gmail/api/v1/reference/users/settings/filters/delete
+
+def GmailSettingsFiltersGet(gapiGmailObj, filterId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/filters/get
+
+def GmailSettingsFiltersList(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/filters/list
+
+def GmailSettingsForwardingAddressesCreate(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/forwardingAddresses/create
+
+def GmailSettingsForwardingAddressesDelete(gapiGmailObj, forwardingEmail):
+https://developers.google.com/gmail/api/v1/reference/users/settings/forwardingAddresses/delete
+
+def GmailSettingsForwardingAddressesGet(gapiGmailObj, forwardingEmail, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/forwardingAddresses/get
+
+def GmailSettingsForwardingAddressesList(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/forwardingAddresses/list
+
+def GmailSettingsSendAsCreate(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/create
+
+def GmailSettingsSendAsDelete(gapiGmailObj, sendAsEmail):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/delete
+
+def GmailSettingsSendAsGet(gapiGmailObj, sendAsEmail, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/get
+
+def GmailSettingsSendAsList(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/list
+
+def GmailSettingsSendAsPatch(gapiGmailObj, sendAsEmail, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/patch
+
+def GmailSettingsSendAsUpdate(gapiGmailObj, sendAsEmail, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/update
+
+def GmailSettingsSendAsVerify(gapiGmailObj, sendAsEmail):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/verify
+
+def GmailSettingsSmimeInfoDelete(gapiGmailObj, sendAsEmail, smimeInfoId):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/smimeInfo/delete
+
+def GmailSettingsSmimeInfoGet(gapiGmailObj, sendAsEmail, smimeInfoId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/smimeInfo/get
+
+def GmailSettingsSmimeInfoInsert(gapiGmailObj, sendAsEmail, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/smimeInfo/insert
+
+def GmailSettingsSmimeInfoList(gapiGmailObj, sendAsEmail, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/smimeInfo/list
+
+def GmailSettingsSmimeInfoSetDefault(gapiGmailObj, sendAsEmail, smimeInfoId):
+https://developers.google.com/gmail/api/v1/reference/users/settings/sendAs/smimeInfo/setDefault
+
+def GmailThreadsDelete(gapiGmailObj, threadId):
+https://developers.google.com/gmail/api/v1/reference/users/threads/delete
+
+def GmailThreadsGet(gapiGmailObj, threadId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/threads/get
+
+def GmailThreadsList(gapiGmailObj, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/threads/list
+
+def GmailThreadsModify(gapiGmailObj, threadId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/threads/modify
+
+def GmailThreadsTrash(gapiGmailObj, threadId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/threads/trash
+
+def GmailThreadsUntrash(gapiGmailObj, threadId, **kwargs):
+https://developers.google.com/gmail/api/v1/reference/users/threads/untrash

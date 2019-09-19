@@ -22,7 +22,7 @@ For more information, see https://github.com/taers232c/GAMLite
 """
 
 __author__ = 'Ross Scroggs <ross.scroggs@gmail.com>'
-__version__ = '1.00.00'
+__version__ = '1.01.00'
 __license__ = 'Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)'
 
 import codecs
@@ -2726,12 +2726,711 @@ def DriveRevisionsUpdate(gapiDriveObj, fileId, revisionId, **kwargs):
 
 # Gmail API
 
-def GmailUsersGetProfile(gapiGmailObj):
+def GmailUsersGetProfile(gapiGmailObj, **kwargs):
   gmail = useGAPIServiceObject(gapiGmailObj)
   try:
     result = callGAPI(gmail.users(), 'getProfile',
                       throw_reasons=GAPI.GMAIL_THROW_REASONS,
-                      userId='me')
+                      userId='me', **kwargs)
     return _cleanJSON(result)
   except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailDraftsCreate(gapiGmailObj, uploadType, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().drafts(), 'create',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', uploadType=uploadType, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailDraftsDelete(gapiGmailObj, draftId):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().drafts(), 'delete',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND],
+                      userId='me', id=draftId)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound) as e:
+    return str(e)
+
+def GmailDraftsGet(gapiGmailObj, draftId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().drafts(), 'get',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND],
+                      userId='me', id=draftId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound) as e:
+    return str(e)
+
+def GmailDraftsList(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().drafts(), 'list',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailDraftsSend(gapiGmailObj, uploadType, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().drafts(), 'send',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', uploadType=uploadType, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailDraftsUpdate(gapiGmailObj, draftId, uploadType, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().drafts(), 'update',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND, GAPI.INVALID_ARGUMENT],
+                      userId='me', id=draftId, uploadType=uploadType, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailHistoryList(gapiGmailObj, startHistoryId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().history(), 'list',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', startHistoryId=startHistoryId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailLabelsCreate(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().labels(), 'create',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.DUPLICATE, GAPI.INVALID_ARGUMENT],
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.duplicate, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailLabelsDelete(gapiGmailObj, labelId):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().labels(), 'delete',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND, GAPI.INVALID_ARGUMENT],
+                      userId='me', id=labelId)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailLabelsGet(gapiGmailObj, labelId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().labels(), 'get',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND, GAPI.INVALID_ARGUMENT],
+                      userId='me', id=labelId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailLabelsList(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().labels(), 'list',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailLabelsPatch(gapiGmailObj, labelId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().labels(), 'patch',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND, GAPI.INVALID_ARGUMENT],
+                      userId='me', id=labelId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound, GAPI.invalidArgument) as e:
+    return str(e)
+
+
+def GmailLabelsUpdate(gapiGmailObj, labelId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().labels(), 'update',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND, GAPI.INVALID_ARGUMENT],
+                      userId='me', id=labelId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesBatchDelete(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'batchDelete',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesBatchModify(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'batchModify',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesDelete(gapiGmailObj, messageId):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'delete',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', id=messageId)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesGet(gapiGmailObj, messageId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'get',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', id=messageId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesImport(gapiGmailObj, uploadType, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'import',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', uploadType=uploadType, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesInsert(gapiGmailObj, uploadType, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'insert',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', uploadType=uploadType, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesList(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'list',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailMessagesModify(gapiGmailObj, messageId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'modify',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', id=messageId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesSend(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'send',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesTrash(gapiGmailObj, messageId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'trash',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', id=messageId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesUntrash(gapiGmailObj, messageId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages(), 'untrash',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', id=messageId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailMessagesAttachmentsGet(gapiGmailObj, messageId, attachmentId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().messages().attachments(), 'get',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', messageId=messageId, id=attachmentId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsGetAutoForwarding(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings(), 'getAutoForwarding',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsGetImap(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings(), 'getImap',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsGetLanguage(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings(), 'getLanguage',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsGetPop(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings(), 'getPop',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsGetVacation(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings(), 'getVacation',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsUpdateAutoForwarding(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings(), 'updateAutoForwarding',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsUpdateImap(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings(), 'updateImap',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsUpdateLanguage(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings(), 'updateLanguage',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsUpdatePop(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings(), 'updatePop',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsUpdateVacation(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings(), 'updateVacation',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsDelegatesCreate(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().delegates(), 'create',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.ALREADY_EXISTS, GAPI.FAILED_PRECONDITION, GAPI.NOT_FOUND, GAPI.INVALID_ARGUMENT],
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.alreadyExists, GAPI.failedPrecondition, GAPI.notFound, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsDelegatesDelete(gapiGmailObj, delegateEmail):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().delegates(), 'delete',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND, GAPI.INVALID_INPUT],
+                      userId='me', deletgateEmail=delegateEmail)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound, GAPI.invalidInput) as e:
+    return str(e)
+
+def GmailSettingsDelegatesGet(gapiGmailObj, delegateEmail, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().delegates(), 'get',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND, GAPI.INVALID_INPUT],
+                      userId='me', deletgateEmail=delegateEmail, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound, GAPI.invalidInput) as e:
+    return str(e)
+
+def GmailSettingsDelegatesList(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().delegates(), 'list',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsFiltersCreate(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().filters(), 'create',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.FAILED_PRECONDITION, GAPI.INVALID_ARGUMENT],
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.failedPrecondition, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsFiltersDelete(gapiGmailObj, filterId):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().filters(), 'delete',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND],
+                      userId='me', id=filterId)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound) as e:
+    return str(e)
+
+def GmailSettingsFiltersGet(gapiGmailObj, filterId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().filters(), 'get',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND],
+                      userId='me', id=filterId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound) as e:
+    return str(e)
+
+def GmailSettingsFiltersList(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().filters(), 'list',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsForwardingAddressesCreate(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().forwardingAddresses(), 'create',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.ALREADY_EXISTS, GAPI.DUPLICATE, GAPI.INVALID_ARGUMENT],
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.alreadyExists, GAPI.duplicate, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsForwardingAddressesDelete(gapiGmailObj, forwardingEmail):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().forwardingAddresses(), 'delete',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND],
+                      userId='me', forwardingEmail=forwardingEmail)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound) as e:
+    return str(e)
+
+def GmailSettingsForwardingAddressesGet(gapiGmailObj, forwardingEmail, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().forwardingAddresses(), 'get',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND],
+                      userId='me', forwardingEmail=forwardingEmail, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound) as e:
+    return str(e)
+
+def GmailSettingsForwardingAddressesList(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().forwardingAddresses(), 'list',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsSendAsCreate(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs(), 'create',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.ALREADY_EXISTS, GAPI.DUPLICATE, GAPI.FAILED_PRECONDITION, GAPI.INVALID_ARGUMENT],
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.alreadyExists, GAPI.duplicate, GAPI.failedPrecondition, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsSendAsDelete(gapiGmailObj, sendAsEmail):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs(), 'delete',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND, GAPI.CANNOT_DELETE_PRIMARY_SENDAS],
+                      userId='me', sendAsEmail=sendAsEmail)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound, GAPI.cannotDeletePrimarySendAs) as e:
+    return str(e)
+
+def GmailSettingsSendAsGet(gapiGmailObj, sendAsEmail, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs(), 'get',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND],
+                      userId='me', sendAsEmail=sendAsEmail, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound) as e:
+    return str(e)
+
+def GmailSettingsSendAsList(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs(), 'list',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailSettingsSendAsPatch(gapiGmailObj, sendAsEmail, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs(), 'patch',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND, GAPI.INVALID_ARGUMENT],
+                      userId='me', sendAsEmail=sendAsEmail, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound, GAPI.invalidArgument) as e:
+    return str(e)
+
+
+def GmailSettingsSendAsUpdate(gapiGmailObj, sendAsEmail, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs(), 'update',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND, GAPI.INVALID_ARGUMENT],
+                      userId='me', sendAsEmail=sendAsEmail, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsSendAsVerify(gapiGmailObj, sendAsEmail):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs(), 'verify',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.NOT_FOUND],
+                      userId='me', sendAsEmail=sendAsEmail)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.notFound) as e:
+    return str(e)
+
+def GmailSettingsSmimeInfoDelete(gapiGmailObj, sendAsEmail, smimeInfoId):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs().smimeInfo(), 'delete',
+                      throw_reasons=GAPI.GMAIL_SMIME_THROW_REASONS,
+                      userId='me', sendAsEmail=sendAsEmail, id=smimeInfoId)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.forbidden, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsSmimeInfoGet(gapiGmailObj, sendAsEmail, smimeInfoId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs().smimeInfo(), 'get',
+                      throw_reasons=GAPI.GMAIL_SMIME_THROW_REASONS,
+                      userId='me', sendAsEmail=sendAsEmail, id=smimeInfoId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.forbidden, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsSmimeInfoInsert(gapiGmailObj, sendAsEmail, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs().smimeInfo(), 'insert',
+                      throw_reasons=GAPI.GMAIL_SMIME_THROW_REASONS,
+                      userId='me', sendAsEmail=sendAsEmail, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.forbidden, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsSmimeInfoList(gapiGmailObj, sendAsEmail, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs().smimeInfo(), 'list',
+                      throw_reasons=GAPI.GMAIL_SMIME_THROW_REASONS,
+                      userId='me', sendAsEmail=sendAsEmail, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.forbidden, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailSettingsSmimeInfoSetDefault(gapiGmailObj, sendAsEmail, smimeInfoId):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().settings().sendAs().smimeInfo(), 'setDefault',
+                      throw_reasons=GAPI.GMAIL_SMIME_THROW_REASONS,
+                      userId='me', sendAsEmail=sendAsEmail, id=smimeInfoId)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.forbidden, GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailThreadsDelete(gapiGmailObj, threadId):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().threads(), 'delete',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', id=threadId)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailThreadsGet(gapiGmailObj, threadId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().threads(), 'get',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', id=threadId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailThreadsList(gapiGmailObj, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().threads(), 'list',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS,
+                      userId='me', **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest) as e:
+    return str(e)
+
+def GmailThreadsModify(gapiGmailObj, threadId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().threads(), 'modify',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', id=threadId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailThreadsTrash(gapiGmailObj, threadId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().threads(), 'trash',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', id=threadId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
+    return str(e)
+
+def GmailThreadsUntrash(gapiGmailObj, threadId, **kwargs):
+  gmail = useGAPIServiceObject(gapiGmailObj)
+  try:
+    result = callGAPI(gmail.users().threads(), 'untrash',
+                      throw_reasons=GAPI.GMAIL_THROW_REASONS+[GAPI.INVALID_ARGUMENT],
+                      userId='me', id=threadId, **kwargs)
+    return _cleanJSON(result)
+  except (GAPI.serviceNotAvailable, GAPI.badRequest,
+          GAPI.invalidArgument) as e:
     return str(e)
