@@ -9,9 +9,7 @@ verify - should config file be displayed
 # APIs
 from gamlib import glapi as API
 
-ADMIN = 'admin'
 ALERTCENTER = 'alertcenter'
-APPSACTIVITY = 'appsactivity'
 CALENDAR = 'calendar'
 CLASSROOM = 'classroom'
 CLOUDPRINT = 'cloudprint'
@@ -19,11 +17,9 @@ CONTACTS = 'contacts'
 DATATRANSFER = 'datatransfer'
 DIRECTORY = 'directory'
 DRIVE = 'drive'
-DRIVE2 = 'drive2'
 DRIVE3 = 'drive3'
 DRIVEACTIVITY = 'driveactivity'
 EMAIL_AUDIT = 'email-audit'
-EMAIL_SETTINGS = 'email-settings'
 GMAIL = 'gmail'
 GROUPSMIGRATION = 'groupsmigration'
 GROUPSSETTINGS = 'groupssettings'

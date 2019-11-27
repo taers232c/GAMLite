@@ -22,7 +22,7 @@ For more information, see https://github.com/taers232c/GAMLite
 """
 
 __author__ = 'Ross Scroggs <ross.scroggs@gmail.com>'
-__version__ = '1.01.00'
+__version__ = '1.02.00'
 __license__ = 'Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)'
 
 import codecs
@@ -48,18 +48,9 @@ from gamlib import glapi as API
 from gamlib import glcfg as GC
 from gamlib import glgapi as GAPI
 from gamlib import glgcp as GCP
-from gamlib import glgdata as GDATA
 from gamlib import glglobals as GM
 from gamlib import glmsgs as Msg
 
-import atom
-import gdata.apps.audit.service
-import gdata.apps.service
-import gdata.apps.contacts
-import gdata.apps.contacts.service
-import gdata.apps.emailsettings.service
-import gdata.apps.sites
-import gdata.apps.sites.service
 import googleapiclient
 import googleapiclient.discovery
 import googleapiclient.errors
@@ -400,12 +391,12 @@ def ClientAPIAccessDeniedExit():
 def SvcAcctAPIAccessDeniedExit():
   stderrErrorMsg(Msg.API_ACCESS_DENIED)
   writeStderr(Msg.API_CHECK_SVCACCT_AUTHORIZATION.format(GM.Globals[GM.OAUTH2SERVICE_CLIENT_ID],
-                                                         ','.join(sorted(API.getSvcAcctScopesSet(GM.Globals[GM.CURRENT_SVCACCT_API]))),
+                                                         ','.join(sorted(GM.Globals[GM.CURRENT_SVCACCT_API_SCOPES])),
                                                          GM.Globals[GM.CURRENT_SVCACCT_USER]))
   systemErrorExit(API_ACCESS_DENIED_RC, None)
 
 def APIAccessDeniedExit():
-  if GM.Globals[GM.CURRENT_CLIENT_API]:
+  if not GM.Globals[GM.CURRENT_SVCACCT_USER] and GM.Globals[GM.CURRENT_CLIENT_API]:
     ClientAPIAccessDeniedExit()
   if GM.Globals[GM.CURRENT_SVCACCT_API]:
     SvcAcctAPIAccessDeniedExit()
@@ -527,6 +518,9 @@ def entityServiceNotApplicableWarning(entityType, entityName):
   writeStderr(formatKeyValueList('',
                                  [entityType, entityName, Msg.SERVICE_NOT_APPLICABLE],
                                  '\n'))
+
+def fileErrorMessage(filename, e):
+  return '{0}: {1}, {2}'.format('File', filename, str(e))
 
 def cleanFilename(filename):
   for ch in '\\/:':
@@ -931,20 +925,21 @@ def handleOAuthTokenError(e, soft_errors):
   stderrErrorMsg('Authentication Token Error - {0}'.format(errMsg))
   APIAccessDeniedExit()
 
-def getOauth2TxtCredentials(storageOnly=False):
-  while True:
-    try:
-      storage = MultiprocessFileStorage(GC.Values[GC.OAUTH2_TXT], API.GAM_SCOPES)
-      if storageOnly:
-        return storage
-      credentials = storage.get()
-      if credentials:
-        return credentials
-    except (KeyError, ValueError):
-      pass
-    except IOError as e:
-      systemErrorExit(FILE_ERROR_RC, e)
-    return None
+def getOauth2TxtCredentials(storageOnly=False, exitOnError=True):
+  try:
+    storage = MultiprocessFileStorage(GC.Values[GC.OAUTH2_TXT], API.GAM_SCOPES)
+    if storageOnly:
+      return storage
+    credentials = storage.get()
+    if credentials:
+      return credentials
+  except (ValueError, IndexError, KeyError):
+    pass
+  except IOError as e:
+    systemErrorExit(FILE_ERROR_RC, fileErrorMessage(GC.Values[GC.OAUTH2_TXT], e))
+  if exitOnError:
+    systemErrorExit(OAUTH2_TXT_REQUIRED_RC, Msg.NO_CLIENT_ACCESS_ALLOWED)
+  return None
 
 def waitOnFailure(n, retries, error_code, error_message):
   delta = min(2 ** n, 60)+float(random.randint(1, 1000))/1000
@@ -982,21 +977,48 @@ def _getValueFromOAuth(field):
     GM.Globals[GM.DECODED_ID_TOKEN] = getClientCredentials().id_token
   return GM.Globals[GM.DECODED_ID_TOKEN].get(field, 'Unknown')
 
-def getSvcAcctCredentials(scopes, act_as):
-  try:
-    if not GM.Globals[GM.OAUTH2SERVICE_JSON_DATA]:
-      json_string = readFile(GC.Values[GC.OAUTH2SERVICE_JSON], continueOnError=True, displayError=True)
-      if not json_string:
-        invalidOauth2serviceJsonExit()
+def defaultSvcAcctScopes():
+  scopesList = API.getSvcAcctScopesList(GC.Values[GC.USER_SERVICE_ACCOUNT_ACCESS_ONLY], False)
+  saScopes = {}
+  for scope in scopesList:
+    saScopes.setdefault(scope['api'], [])
+    saScopes[scope['api']].append(scope['scope'])
+  saScopes[API.DRIVEACTIVITY].append(API.DRIVE_SCOPE)
+  saScopes[API.DRIVE2] = saScopes[API.DRIVE3]
+  return saScopes
+
+def getSvcAcctCredentials(scopesOrAPI, userEmail):
+  if not GM.Globals[GM.OAUTH2SERVICE_JSON_DATA]:
+    json_string = readFile(GC.Values[GC.OAUTH2SERVICE_JSON], continueOnError=True, displayError=True)
+    if not json_string:
+      invalidOauth2serviceJsonExit()
+    try:
       GM.Globals[GM.OAUTH2SERVICE_JSON_DATA] = json.loads(json_string)
+    except (ValueError, IndexError, KeyError):
+      invalidOauth2serviceJsonExit()
+    if not GM.Globals[GM.OAUTH2SERVICE_JSON_DATA]:
+      systemErrorExit(OAUTH2SERVICE_JSON_REQUIRED_RC, Msg.NO_SVCACCT_ACCESS_ALLOWED)
+    if API.OAUTH2SA_SCOPES not in GM.Globals[GM.OAUTH2SERVICE_JSON_DATA]:
+      GM.Globals[GM.SVCACCT_SCOPES] = defaultSvcAcctScopes()
+    else:
+      GM.Globals[GM.SVCACCT_SCOPES] = GM.Globals[GM.OAUTH2SERVICE_JSON_DATA].pop(API.OAUTH2SA_SCOPES)
+  if isinstance(scopesOrAPI, str):
+    GM.Globals[GM.CURRENT_SVCACCT_API] = scopesOrAPI
+    GM.Globals[GM.CURRENT_SVCACCT_API_SCOPES] = GM.Globals[GM.SVCACCT_SCOPES].get(scopesOrAPI, [])
+  else:
+    GM.Globals[GM.CURRENT_SVCACCT_API] = ''
+    GM.Globals[GM.CURRENT_SVCACCT_API_SCOPES] = scopesOrAPI
+  try:
     credentials = google.oauth2.service_account.Credentials.from_service_account_info(GM.Globals[GM.OAUTH2SERVICE_JSON_DATA])
-    credentials = credentials.with_scopes(scopes)
-    credentials = credentials.with_subject(act_as)
-    GM.Globals[GM.ADMIN] = GM.Globals[GM.OAUTH2SERVICE_JSON_DATA]['client_email']
-    GM.Globals[GM.OAUTH2SERVICE_CLIENT_ID] = GM.Globals[GM.OAUTH2SERVICE_JSON_DATA]['client_id']
-    return credentials
   except (ValueError, IndexError, KeyError):
     invalidOauth2serviceJsonExit()
+  credentials = credentials.with_scopes(GM.Globals[GM.CURRENT_SVCACCT_API_SCOPES])
+  GM.Globals[GM.CURRENT_SVCACCT_USER] = userEmail
+  if userEmail:
+    credentials = credentials.with_subject(userEmail)
+  GM.Globals[GM.ADMIN] = GM.Globals[GM.OAUTH2SERVICE_JSON_DATA]['client_email']
+  GM.Globals[GM.OAUTH2SERVICE_CLIENT_ID] = GM.Globals[GM.OAUTH2SERVICE_JSON_DATA]['client_id']
+  return credentials
 
 def checkGAPIError(e, soft_errors=False, retryOnHttpError=False, service=None):
   try:
@@ -1262,7 +1284,7 @@ def getAPIversionHttpService(api):
     service = googleapiclient.discovery.build_from_document(GM.Globals[GM.CURRENT_API_SERVICES][api][version], http=httpObj)
     if GM.Globals[GM.CACHE_DISCOVERY_ONLY]:
       httpObj.cache = None
-    return (api_version, httpObj, service)
+    return (httpObj, service)
   if not hasLocalJSON:
     retries = 3
     for n in range(1, retries+1):
@@ -1273,7 +1295,7 @@ def getAPIversionHttpService(api):
         GM.Globals[GM.CURRENT_API_SERVICES][api][version] = service._rootDesc.copy()
         if GM.Globals[GM.CACHE_DISCOVERY_ONLY]:
           httpObj.cache = None
-        return (api_version, httpObj, service)
+        return (httpObj, service)
       except googleapiclient.errors.UnknownApiNameOrVersion as e:
         systemErrorExit(GOOGLE_API_ERROR_RC, Msg.UNKNOWN_API_OR_VERSION.format(str(e), __author__))
       except (googleapiclient.errors.InvalidJsonError, KeyError, ValueError):
@@ -1303,24 +1325,23 @@ def getAPIversionHttpService(api):
     GM.Globals[GM.CURRENT_API_SERVICES][api][version] = service._rootDesc.copy()
     if GM.Globals[GM.CACHE_DISCOVERY_ONLY]:
       httpObj.cache = None
-    return (api_version, httpObj, service)
+    return (httpObj, service)
   except (KeyError, ValueError):
     invalidDiscoveryJsonExit(disc_file)
   except IOError as e:
     systemErrorExit(FILE_ERROR_RC, str(e))
 
 def buildGAPIObject(api):
-  _, httpObj, service = getAPIversionHttpService(api)
+  httpObj, service = getAPIversionHttpService(api)
   credentials = getClientCredentials()
   try:
     API_Scopes = set(list(service._rootDesc['auth']['oauth2']['scopes']))
   except KeyError:
     API_Scopes = set(API.VAULT_SCOPES) if api == API.VAULT else set()
   GM.Globals[GM.CURRENT_CLIENT_API] = api
-  scopes = API_Scopes.intersection(credentials.scopes)
-  GM.Globals[GM.CURRENT_CLIENT_API_SCOPES] = scopes
-  if api != API.OAUTH2 and not scopes:
-    systemErrorExit(NO_SCOPES_FOR_API_RC, Msg.NO_SCOPES_FOR_API.format(service._rootDesc['title']))
+  GM.Globals[GM.CURRENT_CLIENT_API_SCOPES] = API_Scopes.intersection(credentials.scopes)
+  if api != API.OAUTH2 and not GM.Globals[GM.CURRENT_CLIENT_API_SCOPES]:
+    systemErrorExit(NO_SCOPES_FOR_API_RC, Msg.NO_SCOPES_FOR_API.format(API.getAPIName(api)))
   retries = 3
   for n in range(1, retries+1):
     try:
@@ -1331,7 +1352,7 @@ def buildGAPIObject(api):
         GC.Values[GC.CUSTOMER_ID] = GC.MY_CUSTOMER
       GM.Globals[GM.ADMIN] = credentials.id_token.get('email', 'UNKNOWN').lower()
       GM.Globals[GM.OAUTH2_CLIENT_ID] = credentials.client_id
-      return {'service': service, 'api': api, 'scopes': scopes}
+      return {'service': service, 'api': api, 'scopes': GM.Globals[GM.CURRENT_CLIENT_API_SCOPES]}
     except (oauth2client.client.AccessTokenRefreshError, google.auth.exceptions.RefreshError) as e:
       if isinstance(e.args, tuple):
         e = e.args[0]
@@ -1372,23 +1393,15 @@ google_auth_httplib2.Request.__call__ = _request_with_user_agent(google_auth_htt
 google_auth_httplib2.AuthorizedHttp.request = _request_with_user_agent(google_auth_httplib2.AuthorizedHttp.request)
 
 def buildGAPIServiceObject(api, user, displayError=True):
-  currentClientAPI = GM.Globals[GM.CURRENT_CLIENT_API]
-  currentClientAPIScopes = GM.Globals[GM.CURRENT_CLIENT_API_SCOPES]
-  GM.Globals[GM.CURRENT_CLIENT_API] = currentClientAPI
-  GM.Globals[GM.CURRENT_CLIENT_API_SCOPES] = currentClientAPIScopes
-  _, httpObj, service = getAPIversionHttpService(api)
-  GM.Globals[GM.CURRENT_SVCACCT_API] = api
-  scopes = API.getSvcAcctScopesSet(api)
-  GM.Globals[GM.CURRENT_SVCACCT_API_SCOPES] = scopes
-  GM.Globals[GM.CURRENT_SVCACCT_USER] = user
-  credentials = getSvcAcctCredentials(scopes, user)
+  httpObj, service = getAPIversionHttpService(api)
+  credentials = getSvcAcctCredentials(api, user)
   request = google_auth_httplib2.Request(httpObj)
   retries = 3
   for n in range(1, retries+1):
     try:
       credentials.refresh(request)
       service._http = google_auth_httplib2.AuthorizedHttp(credentials, http=httpObj)
-      return {'service': service, 'api': api, 'scopes': scopes, 'user': user}
+      return {'service': service, 'api': api, 'scopes': GM.Globals[GM.SVCACCT_SCOPES], 'user': user}
     except (httplib2.HttpLib2Error, google.auth.exceptions.TransportError, RuntimeError) as e:
       if n != retries:
         httpObj.connections = {}

@@ -1,3 +1,7 @@
+1.02.00
+
+Updated to handle limited service account access.
+
 1.01.00
 
 Added Gmail API.

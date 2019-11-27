@@ -51,23 +51,23 @@ print('\nGmailLabelsList')
 result = gam.GmailLabelsList(gapiGmailObj)
 print(result)
 
-print('\nGmailSettingsGetAutoForwarding')
+print('\nGmailSettingsAutoForwardingGet')
 result = gam.GmailSettingsGetAutoForwarding(gapiGmailObj)
 print(result)
 
-print('\nGmailSettingsGetImap')
+print('\nGmailSettingsImapGet')
 result = gam.GmailSettingsGetImap(gapiGmailObj)
 print(result)
 
-print('\nGmailSettingsGetLanguage')
+print('\nGmailSettingsLanguageGet')
 result = gam.GmailSettingsGetLanguage(gapiGmailObj)
 print(result)
 
-print('\nGmailSettingsGetPop')
+print('\nGmailSettingsPopGet')
 result = gam.GmailSettingsGetPop(gapiGmailObj)
 print(result)
 
-print('\nGmailSettingsGetVacation')
+print('\nGmailSettingsVacationGet')
 result = gam.GmailSettingsGetVacation(gapiGmailObj)
 print(result)
 
