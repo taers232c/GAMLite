@@ -34,6 +34,7 @@ from html.parser import HTMLParser
 import http.client as http_client
 import io
 import json
+import logging
 import os
 import platform
 import random
@@ -648,6 +649,14 @@ def checkAPICallsRate():
       GM.Globals[GM.RATE_CHECK_START] = current
     GM.Globals[GM.RATE_CHECK_COUNT] = 0
 
+class NullHandler(logging.Handler):
+  def emit(self, record):
+    pass
+
+def initializeLogging():
+  nh = NullHandler()
+  logging.getLogger().addHandler(nh)
+
 # Set global variables from config file
 def SetGlobalVariables(configFile, sectionName=None, config=None, save=False, verify=False):
 
@@ -817,6 +826,7 @@ def SetGlobalVariables(configFile, sectionName=None, config=None, save=False, ve
         continue
       printLine('  {0} = {1}'.format(itemName, cfgValue))
 
+  initializeLogging()
   GM.Globals[GM.GAM_CFG_FILE] = configFile
   GM.Globals[GM.PARSER] = configparser.RawConfigParser(defaults=collections.OrderedDict(sorted(list(GC.Defaults.items()), key=lambda t: t[0])))
   _readGamCfgFile(GM.Globals[GM.PARSER], GM.Globals[GM.GAM_CFG_FILE])
