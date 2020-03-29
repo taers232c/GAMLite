@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2019 Ross Scroggs All Rights Reserved.
+# Copyright (C) 2020 Ross Scroggs All Rights Reserved.
 #
 # All Rights Reserved.
 #
@@ -71,8 +71,12 @@ EXTRA_ARGS_LIST = 'exad'
 # gam.cfg file
 GAM_CFG_PATH = 'gcpa'
 GAM_CFG_FILE = 'gcfi'
+# On Windows, file containing oauth create URL
+GAM_OAUTH_URL_TXT = 'gout'
 # Path to gam
 GAM_PATH = 'gpth'
+# Length of last Got message
+LAST_GOT_MSG_LEN = 'lgml'
 # File containing time of last GAM update check
 LAST_UPDATE_CHECK_TXT = 'lupc'
 # Make Building ID/Name map
@@ -98,7 +102,9 @@ OAUTH2_TXT_LOCK = 'oatl'
 # Values retrieved from oauth2service.json
 OAUTH2SERVICE_CLIENT_ID = 'osci'
 OAUTH2SERVICE_JSON_DATA = 'osjd'
-# Values retrieved from oauth2service.json
+# Were scopes values retrieved from oauth2service.json
+SVCACCT_SCOPES_DEFINED = 'sasd'
+# Scopes values retrieved from oauth2service.json
 SVCACCT_SCOPES = 'sasc'
 # gam.cfg parser
 PARSER = 'pars'
@@ -141,6 +147,8 @@ SYSEXITRC = 'sxrc'
 SYS_ENCODING = 'syen'
 # Shared by threadBatchWorker and threadBatchGAMCommands
 TBATCH_QUEUE = 'batq'
+# CSV todrive options
+CSV_TODRIVE = 'todr'
 # Are we on Windows?
 WINDOWS = 'wndo'
 #
@@ -170,7 +178,9 @@ Globals = {
   EXTRA_ARGS_LIST: [],
   GAM_CFG_PATH: '',
   GAM_CFG_FILE: '',
+  GAM_OAUTH_URL_TXT: None,
   GAM_PATH: '.',
+  LAST_GOT_MSG_LEN: 0,
   LAST_UPDATE_CHECK_TXT: '',
   MAKE_BUILDING_ID_NAME_MAP: True,
   MAP_BUILDING_ID_TO_NAME: {},
@@ -184,6 +194,7 @@ Globals = {
   OAUTH2_TXT_LOCK: None,
   OAUTH2SERVICE_CLIENT_ID: None,
   OAUTH2SERVICE_JSON_DATA: {},
+  SVCACCT_SCOPES_DEFINED: False,
   SVCACCT_SCOPES: {},
   PARSER: None,
   PID: 0,
@@ -196,5 +207,6 @@ Globals = {
   SYSEXITRC: 0,
   SYS_ENCODING: 'utf-8',
   TBATCH_QUEUE: None,
+  CSV_TODRIVE: {},
   WINDOWS: os.name == 'nt',
   }

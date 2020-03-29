@@ -1,3 +1,17 @@
+2.00.00
+
+Upgraded to Python 3.8.2 and OpenSSL 1.1.1e.
+
+Replaced the deprecated `oauth2client` library with the `google-auth` library.
+This change requires a one-time update of the client access file `oauth2.txt`; GAM will continue
+to use the old version of `oauth2.txt` until you perform the update. There is a small performance
+impact until the update is performed. However, you can't use the updated version of `oauth2.txt`
+
+Use an executable version of GAM 5.00.00+ to perform the update.
+```
+gam oauth refresh
+```
+
 1.02.00
 
 Updated to handle limited service account access.

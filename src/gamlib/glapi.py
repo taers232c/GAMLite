@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2019 Ross Scroggs All Rights Reserved.
+# Copyright (C) 2020 Ross Scroggs All Rights Reserved.
 #
 # All Rights Reserved.
 #
@@ -22,26 +22,34 @@
 # APIs
 ALERTCENTER = 'alertcenter'
 CALENDAR = 'calendar'
-#CHAT = 'chat'
+CHAT = 'chat'
 CLASSROOM = 'classroom'
 CLOUDPRINT = 'cloudprint'
+CLOUDRESOURCEMANAGER_V1 = 'cloudresourcemanager1'
+CLOUDRESOURCEMANAGER_V2 = 'cloudresourcemanager2'
 CONTACTS = 'contacts'
 DATATRANSFER = 'datatransfer'
 DIRECTORY = 'directory'
 DRIVE2 = 'drive2'
 DRIVE3 = 'drive3'
-DRIVEACTIVITY = 'driveactivity'
+DRIVETD = 'drivetd'
+DRIVEACTIVITY_V1 = 'appsactivity'
+DRIVEACTIVITY_V2 = 'driveactivity'
 EMAIL_AUDIT = 'email-audit'
 GMAIL = 'gmail'
 GROUPSMIGRATION = 'groupsmigration'
 GROUPSSETTINGS = 'groupssettings'
+IAM = 'iam'
+IAP = 'iap'
 LICENSING = 'licensing'
 OAUTH2 = 'oauth2'
 PEOPLE = 'people'
 PUBSUB = 'pubsub'
 REPORTS = 'reports'
 RESELLER = 'reseller'
+SERVICEMANAGEMENT = 'servicemanagement'
 SHEETS = 'sheets'
+SHEETSTD = 'sheetstd'
 SITES = 'sites'
 SITEVERIFICATION = 'siteVerification'
 STORAGE = 'storage'
@@ -52,6 +60,18 @@ FAM1_SCOPES = 'fam1'
 FAM2_SCOPES = 'fam2'
 FAM_LIST = [FAM1_SCOPES, FAM2_SCOPES]
 #
+DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
+GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send'
+USERINFO_EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email' # email
+VAULT_SCOPES = ['https://www.googleapis.com/auth/ediscovery', 'https://www.googleapis.com/auth/ediscovery.readonly']
+REQUIRED_SCOPES = ['email', 'profile']
+REQUIRED_SCOPES_SET = set(REQUIRED_SCOPES)
+#
+REFRESH_PERM_ERRORS = [
+  'invalid_grant: reauth related error (rapt_required)', # no way to reauth today
+  'invalid_grant: Token has been expired or revoked.',
+  ]
+
 OAUTH2_TOKEN_ERRORS = [
   'access_denied',
   'access_denied: Requested client not authorized',
@@ -71,16 +91,20 @@ OAUTH2_TOKEN_ERRORS = [
 PROJECT_APIS = [
   'admin.googleapis.com',
   'alertcenter.googleapis.com',
+  'appsactivity.googleapis.com',
   'audit.googleapis.com',
   'calendar-json.googleapis.com',
-  #'chat.googleapis.com',
+  'chat.googleapis.com',
   'classroom.googleapis.com',
+  'cloudidentity.googleapis.com',
   'contacts.googleapis.com',
   'drive.googleapis.com',
   'driveactivity.googleapis.com',
   'gmail.googleapis.com',
   'groupsmigration.googleapis.com',
   'groupssettings.googleapis.com',
+  'iam.googleapis.com',
+  'iap.googleapis.com',
   'licensing.googleapis.com',
   'people.googleapis.com',
   'pubsub.googleapis.com',
@@ -91,34 +115,36 @@ PROJECT_APIS = [
   'vault.googleapis.com',
   ]
 
-APPS_GROUPS_MIGRATION_SCOPE = 'https://www.googleapis.com/auth/apps.groups.migration'
-DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
-USERINFO_EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email' # email
-VAULT_SCOPES = ['https://www.googleapis.com/auth/ediscovery', 'https://www.googleapis.com/auth/ediscovery.readonly']
-REQUIRED_SCOPES = ['email', 'profile']
-
 _INFO = {
   ALERTCENTER: {'name': 'AlertCenter API', 'version': 'v1beta1', 'v2discovery': True},
   CALENDAR: {'name': 'Calendar API', 'version': 'v3', 'v2discovery': False},
   CLASSROOM: {'name': 'Classroom API', 'version': 'v1', 'v2discovery': True},
   CLOUDPRINT: {'name': 'Cloudprint API', 'version': 'v2', 'v2discovery': True, 'localjson': True},
+  CLOUDRESOURCEMANAGER_V1: {'name': 'Cloud Resource Manager API v1', 'version': 'v1', 'v2discovery': True, 'mappedAPI': 'cloudresourcemanager'},
+  CLOUDRESOURCEMANAGER_V2: {'name': 'Cloud Resource Manager API v2', 'version': 'v2', 'v2discovery': True, 'mappedAPI': 'cloudresourcemanager'},
   CONTACTS: {'name': 'Contacts API', 'version': 'v3', 'v2discovery': False},
-  DATATRANSFER: {'name': 'Data Transfer API', 'version': 'datatransfer_v1', 'v2discovery': False},
-  DIRECTORY: {'name': 'Directory API', 'version': 'directory_v1', 'v2discovery': False},
-  DRIVE2: {'name': 'Drive API v2', 'version': 'v2', 'v2discovery': False},
-  DRIVE3: {'name': 'Drive API v3', 'version': 'v3', 'v2discovery': False},
-  DRIVEACTIVITY: {'name': 'Drive Activity API', 'version': 'v2', 'v2discovery': True},
+  DATATRANSFER: {'name': 'Data Transfer API', 'version': 'datatransfer_v1', 'v2discovery': False, 'mappedAPI': 'admin'},
+  DIRECTORY: {'name': 'Directory API', 'version': 'directory_v1', 'v2discovery': False, 'mappedAPI': 'admin'},
+  DRIVE2: {'name': 'Drive API v2', 'version': 'v2', 'v2discovery': False, 'mappedAPI': 'drive'},
+  DRIVE3: {'name': 'Drive API v3', 'version': 'v3', 'v2discovery': False, 'mappedAPI': 'drive'},
+  DRIVETD: {'name': 'Drive API v3 - todrive', 'version': 'v3', 'v2discovery': False, 'mappedAPI': 'drive'},
+  DRIVEACTIVITY_V1: {'name': 'Drive Activity API v1', 'version': 'v1', 'v2discovery': False},
+  DRIVEACTIVITY_V2: {'name': 'Drive Activity API v2', 'version': 'v2', 'v2discovery': True},
   EMAIL_AUDIT: {'name': 'Email Audit API', 'version': 'v1', 'v2discovery': False},
-  GMAIL: {'name': 'Gmail API - todrive_clientaccess', 'version': 'v1', 'v2discovery': False},
+  GMAIL: {'name': 'Gmail API', 'version': 'v1', 'v2discovery': False},
   GROUPSMIGRATION: {'name': 'Groups Migration API', 'version': 'v1', 'v2discovery': False},
   GROUPSSETTINGS: {'name': 'Groups Settings API', 'version': 'v1', 'v2discovery': False},
+  IAM: {'name': 'Identity and Access Management API', 'version': 'v1', 'v2discovery': True},
+  IAP: {'name': 'Cloud Identity-Aware Proxy API', 'version': 'v1', 'v2discovery': True},
   LICENSING: {'name': 'License Manager API', 'version': 'v1', 'v2discovery': False},
   OAUTH2: {'name': 'OAuth2 API', 'version': 'v2', 'v2discovery': False},
   PEOPLE: {'name': 'People API', 'version': 'v1', 'v2discovery': True},
   PUBSUB: {'name': 'Pub / Sub API', 'version': 'v1', 'v2discovery': True},
-  REPORTS: {'name': 'Reports API', 'version': 'reports_v1', 'v2discovery': False},
+  REPORTS: {'name': 'Reports API', 'version': 'reports_v1', 'v2discovery': False, 'mappedAPI': 'admin'},
   RESELLER: {'name': 'Reseller API', 'version': 'v1', 'v2discovery': False},
+  SERVICEMANAGEMENT: {'name': 'Service Management API', 'version': 'v1', 'v2discovery': True},
   SHEETS: {'name': 'Sheets API', 'version': 'v4', 'v2discovery': True},
+  SHEETSTD: {'name': 'Sheets API - todrive', 'version': 'v4', 'v2discovery': True, 'mappedAPI': 'sheets'},
   SITES: {'name': 'Sites API', 'version': 'v1', 'v2discovery': False},
   SITEVERIFICATION: {'name': 'Site Verification API', 'version': 'v1', 'v2discovery': False},
   STORAGE: {'name': 'Cloud Storage API', 'version': 'v1', 'v2discovery': False},
@@ -231,7 +257,7 @@ _CLIENT_SCOPES = [
   {'name': 'Groups Migration API',
    'api': GROUPSMIGRATION,
    'subscopes': [],
-   'scope': APPS_GROUPS_MIGRATION_SCOPE},
+   'scope': 'https://www.googleapis.com/auth/apps.groups.migration'},
   {'name': 'Groups Settings API',
    'api': GROUPSSETTINGS,
    'subscopes': [],
@@ -280,11 +306,11 @@ _TODRIVE_CLIENT_SCOPES = [
   {'name': 'Drive API - todrive_clientaccess',
    'api': DRIVE3,
    'subscopes': [],
-   'scope': 'https://www.googleapis.com/auth/drive'},
+   'scope': DRIVE_SCOPE},
   {'name': 'Gmail API - todrive_clientaccess',
    'api': GMAIL,
    'subscopes': [],
-   'scope': 'https://www.googleapis.com/auth/gmail.send'},
+   'scope': GMAIL_SEND_SCOPE},
   {'name': 'Sheets API - todrive_clientaccess',
    'api': SHEETS,
    'subscopes': [],
@@ -329,9 +355,13 @@ _SVCACCT_SCOPES = [
   {'name': 'Drive API',
    'api': DRIVE3,
    'subscopes': READONLY,
-   'scope': 'https://www.googleapis.com/auth/drive'},
-  {'name': 'Drive Activity API - must pair with Drive API',
-   'api': DRIVEACTIVITY,
+   'scope': DRIVE_SCOPE},
+  {'name': 'Drive Activity API v1 - must pair with Drive API',
+   'api': DRIVEACTIVITY_V1,
+   'subscopes': [],
+   'scope': 'https://www.googleapis.com/auth/activity'},
+  {'name': 'Drive Activity API v2 - must pair with Drive API',
+   'api': DRIVEACTIVITY_V2,
    'subscopes': [],
    'scope': 'https://www.googleapis.com/auth/drive.activity'},
   {'name': 'Gmail API - Full Access',
@@ -350,6 +380,10 @@ _SVCACCT_SCOPES = [
    'api': GMAIL,
    'subscopes': [],
    'scope': 'https://www.googleapis.com/auth/gmail.settings.sharing'},
+  {'name': 'Identity and Access Management API',
+   'api': IAM,
+   'subscopes': [],
+   'scope': 'https://www.googleapis.com/auth/iam'},
   {'name': 'People API',
    'api': PEOPLE,
    'subscopes': READONLY,
@@ -364,22 +398,30 @@ _SVCACCT_SCOPES = [
    'scope': 'https://sites.google.com/feeds'},
   ]
 
-_GMAIL_SPECIAL_SCOPES = [
+_SVCACCT_SPECIAL_SCOPES = [
+  {'name': 'Drive API - todrive',
+   'api': DRIVETD,
+   'subscopes': [],
+   'scope': DRIVE_SCOPE},
   {'name': 'Gmail API - Full Access - read only',
    'api': GMAIL,
    'subscopes': [],
    'scope': 'https://www.googleapis.com/auth/gmail.readonly'},
-  {'name': 'Gmail API - Send Messages',
+  {'name': 'Gmail API - Send Messages - including todrive',
    'api': GMAIL,
    'subscopes': [],
-   'scope': 'https://www.googleapis.com/auth/gmail.send'},
+   'scope': GMAIL_SEND_SCOPE},
+  {'name': 'Sheets API - todrive',
+   'api': SHEETSTD,
+   'subscopes': [],
+   'scope': 'https://www.googleapis.com/auth/spreadsheets'},
   ]
 
 _USER_SVCACCT_ONLY_SCOPES = [
   {'name': 'Groups Migration API',
    'api': GROUPSMIGRATION,
    'subscopes': [],
-   'scope': APPS_GROUPS_MIGRATION_SCOPE},
+   'scope': 'https://www.googleapis.com/auth/apps.groups.migration'},
   ]
 
 DRIVE3_TO_DRIVE2_ABOUT_FIELDS_MAP = {
@@ -445,11 +487,8 @@ def getAPIName(api):
 def getVersion(api):
   version = _INFO[api]['version']
   v2discovery = _INFO[api]['v2discovery']
-  if api in {DIRECTORY, REPORTS, DATATRANSFER}:
-    api = 'admin'
-  elif api in {DRIVE2, DRIVE3}:
-    api = 'drive'
-  return (api, version, '{0}-{1}'.format(api, version), v2discovery)
+  api = _INFO[api].get('mappedAPI', api)
+  return (api, version, v2discovery)
 
 def getClientScopesSet(api):
   return {scope['scope'] for scope in _CLIENT_SCOPES if scope['api'] == api}
@@ -460,28 +499,33 @@ def getClientScopesList(todriveClientAccess):
     caScopes.extend(_TODRIVE_CLIENT_SCOPES)
   return sorted(caScopes, key=lambda k: k['name'])
 
+def getClientScopesURLs(todriveClientAccess):
+  caScopes = _CLIENT_SCOPES[:]
+  if todriveClientAccess:
+    caScopes.extend(_TODRIVE_CLIENT_SCOPES)
+  return sorted({scope['scope'] for scope in _CLIENT_SCOPES})
+
 def getSvcAcctScopeAPI(uscope):
   for scope in _SVCACCT_SCOPES:
     if uscope == scope['scope'] or (uscope.endswith('.readonly') and 'readonly' in scope['subscopes']):
       return scope['api']
   return None
 
-def getSvcAcctScopes(userServiceAccountAccessOnly, gmailSpecialScopes):
+def getSvcAcctScopes(userServiceAccountAccessOnly, svcAcctSpecialScopes):
   saScopes = [scope['scope'] for scope in _SVCACCT_SCOPES]
   if userServiceAccountAccessOnly:
     saScopes.extend([scope['scope'] for scope in _USER_SVCACCT_ONLY_SCOPES])
-  if gmailSpecialScopes:
-    saScopes.extend([scope['scope'] for scope in _GMAIL_SPECIAL_SCOPES])
+  if svcAcctSpecialScopes:
+    saScopes.extend([scope['scope'] for scope in _SVCACCT_SPECIAL_SCOPES])
   return saScopes
 
-def getSvcAcctScopesList(userServiceAccountAccessOnly, gmailSpecialScopes):
+def getSvcAcctScopesList(userServiceAccountAccessOnly, svcAcctSpecialScopes):
   saScopes = _SVCACCT_SCOPES[:]
   if userServiceAccountAccessOnly:
     saScopes.extend(_USER_SVCACCT_ONLY_SCOPES)
-  if gmailSpecialScopes:
-    saScopes.extend(_GMAIL_SPECIAL_SCOPES)
+  if svcAcctSpecialScopes:
+    saScopes.extend(_SVCACCT_SPECIAL_SCOPES)
   return sorted(saScopes, key=lambda k: k['name'])
 
 def hasLocalJSON(api):
   return _INFO[api].get('localjson', False)
-

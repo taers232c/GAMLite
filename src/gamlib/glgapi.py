@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2019 Ross Scroggs All Rights Reserved.
+# Copyright (C) 2020 Ross Scroggs All Rights Reserved.
 #
 # All Rights Reserved.
 #
@@ -45,6 +45,7 @@ CANNOT_REMOVE_OWNER = 'cannotRemoveOwner'
 CANNOT_SHARE_GROUPS_WITHLINK = 'cannotShareGroupsWithLink'
 CANNOT_SHARE_USERS_WITHLINK = 'cannotShareUsersWithLink'
 CANNOT_SHARE_TEAMDRIVE_TOPFOLDER_WITH_ANYONEORDOMAINS = 'cannotShareTeamDriveTopFolderWithAnyoneOrDomains'
+CANNOT_UPDATE_PERMISSION = 'cannotUpdatePermission'
 CONDITION_NOT_MET = 'conditionNotMet'
 CONFLICT = 'conflict'
 CUSTOMER_NOT_FOUND = 'customerNotFound'
@@ -66,6 +67,7 @@ FILE_ORGANIZER_NOT_YET_ENABLED_FOR_THIS_TEAMDRIVE = 'fileOrganizerNotYetEnabledF
 FILE_ORGANIZER_ON_NON_TEAMDRIVE_NOT_SUPPORTED = 'fileOrganizerOnNonTeamDriveNotSupported'
 FILE_OWNER_NOT_MEMBER_OF_TEAMDRIVE = 'fileOwnerNotMemberOfTeamDrive'
 FILE_OWNER_NOT_MEMBER_OF_WRITER_DOMAIN = 'fileOwnerNotMemberOfWriterDomain'
+FILE_WRITER_TEAMDRIVE_MOVE_IN_DISABLED = 'fileWriterTeamDriveMoveInDisabled'
 FORBIDDEN = 'forbidden'
 GATEWAY_TIMEOUT = 'gatewayTimeout'
 GROUP_NOT_FOUND = 'groupNotFound'
@@ -104,6 +106,7 @@ ORGANIZER_ON_NON_TEAMDRIVE_ITEM_NOT_SUPPORTED = 'organizerOnNonTeamDriveItemNotS
 ORGUNIT_NOT_FOUND = 'orgunitNotFound'
 OWNER_ON_TEAMDRIVE_ITEM_NOT_SUPPORTED = 'ownerOnTeamDriveItemNotSupported'
 OWNERSHIP_CHANGE_ACROSS_DOMAIN_NOT_PERMITTED = 'ownershipChangeAcrossDomainNotPermitted'
+PARTICIPANT_IS_NEITHER_ORGANIZER_NOR_ATTENDEE = 'participantIsNeitherOrganizerNorAttendee'
 PERMISSION_DENIED = 'permissionDenied'
 PERMISSION_NOT_FOUND = 'permissionNotFound'
 PHOTO_NOT_FOUND = 'photoNotFound'
@@ -164,6 +167,7 @@ DRIVE3_UPDATE_ACL_THROW_REASONS = [BAD_REQUEST, INVALID_OWNERSHIP_TRANSFER, CANN
                                    ORGANIZER_ON_NON_TEAMDRIVE_ITEM_NOT_SUPPORTED,
                                    FILE_ORGANIZER_ON_NON_TEAMDRIVE_NOT_SUPPORTED,
                                    FILE_ORGANIZER_NOT_YET_ENABLED_FOR_THIS_TEAMDRIVE,
+                                   CANNOT_UPDATE_PERMISSION,
                                    CANNOT_MODIFY_INHERITED_TEAMDRIVE_PERMISSION,
                                    FIELD_NOT_WRITABLE, PERMISSION_NOT_FOUND]
 DRIVE3_DELETE_ACL_THROW_REASONS = [BAD_REQUEST, CANNOT_REMOVE_OWNER,
@@ -181,7 +185,8 @@ GROUP_SETTINGS_THROW_REASONS = [NOT_FOUND, GROUP_NOT_FOUND, DOMAIN_NOT_FOUND, DO
 GROUP_SETTINGS_RETRY_REASONS = [INVALID, SERVICE_LIMIT]
 MEMBERS_THROW_REASONS = [GROUP_NOT_FOUND, DOMAIN_NOT_FOUND, DOMAIN_CANNOT_USE_APIS, INVALID, FORBIDDEN]
 MEMBERS_RETRY_REASONS = [SYSTEM_ERROR]
-SHEETS_ACCESS_THROW_REASONS = DRIVE_USER_THROW_REASONS+[NOT_FOUND, FORBIDDEN, INTERNAL_ERROR, INSUFFICIENT_FILE_PERMISSIONS, BAD_REQUEST, INVALID]
+PEOPLE_THROW_REASONS = [SERVICE_NOT_AVAILABLE, FORBIDDEN]
+SHEETS_ACCESS_THROW_REASONS = DRIVE_USER_THROW_REASONS+[NOT_FOUND, PERMISSION_DENIED, FORBIDDEN, INTERNAL_ERROR, INSUFFICIENT_FILE_PERMISSIONS, BAD_REQUEST, INVALID]
 USER_GET_THROW_REASONS = [USER_NOT_FOUND, DOMAIN_NOT_FOUND, DOMAIN_CANNOT_USE_APIS, FORBIDDEN, BAD_REQUEST, SYSTEM_ERROR]
 
 REASON_MESSAGE_MAP = {
@@ -298,6 +303,8 @@ class cannotShareUsersWithLink(Exception):
   pass
 class cannotShareTeamDriveTopFolderWithAnyoneOrDomains(Exception):
   pass
+class cannotUpdatePermission(Exception):
+  pass
 class conditionNotMet(Exception):
   pass
 class conflict(Exception):
@@ -337,6 +344,8 @@ class fileOrganizerOnNonTeamDriveNotSupported(Exception):
 class fileOwnerNotMemberOfTeamDrive(Exception):
   pass
 class fileOwnerNotMemberOfWriterDomain(Exception):
+  pass
+class fileWriterTeamDriveMoveInDisabled(Exception):
   pass
 class forbidden(Exception):
   pass
@@ -411,6 +420,8 @@ class orgunitNotFound(Exception):
 class ownerOnTeamDriveItemNotSupported(Exception):
   pass
 class ownershipChangeAcrossDomainNotPermitted(Exception):
+  pass
+class participantIsNeitherOrganizerNorAttendee(Exception):
   pass
 class permissionDenied(Exception):
   pass
@@ -500,6 +511,7 @@ REASON_EXCEPTION_MAP = {
   CANNOT_SHARE_GROUPS_WITHLINK: cannotShareGroupsWithLink,
   CANNOT_SHARE_USERS_WITHLINK: cannotShareUsersWithLink,
   CANNOT_SHARE_TEAMDRIVE_TOPFOLDER_WITH_ANYONEORDOMAINS: cannotShareTeamDriveTopFolderWithAnyoneOrDomains,
+  CANNOT_UPDATE_PERMISSION: cannotUpdatePermission,
   CONDITION_NOT_MET: conditionNotMet,
   CONFLICT: conflict,
   CUSTOMER_NOT_FOUND: customerNotFound,
@@ -520,6 +532,7 @@ REASON_EXCEPTION_MAP = {
   FILE_ORGANIZER_ON_NON_TEAMDRIVE_NOT_SUPPORTED: fileOrganizerOnNonTeamDriveNotSupported,
   FILE_OWNER_NOT_MEMBER_OF_TEAMDRIVE: fileOwnerNotMemberOfTeamDrive,
   FILE_OWNER_NOT_MEMBER_OF_WRITER_DOMAIN: fileOwnerNotMemberOfWriterDomain,
+  FILE_WRITER_TEAMDRIVE_MOVE_IN_DISABLED: fileWriterTeamDriveMoveInDisabled,
   FORBIDDEN: forbidden,
   GROUP_NOT_FOUND: groupNotFound,
   ILLEGAL_ACCESS_ROLE_FOR_DEFAULT: illegalAccessRoleForDefault,
@@ -557,6 +570,7 @@ REASON_EXCEPTION_MAP = {
   ORGUNIT_NOT_FOUND: orgunitNotFound,
   OWNER_ON_TEAMDRIVE_ITEM_NOT_SUPPORTED: ownerOnTeamDriveItemNotSupported,
   OWNERSHIP_CHANGE_ACROSS_DOMAIN_NOT_PERMITTED: ownershipChangeAcrossDomainNotPermitted,
+  PARTICIPANT_IS_NEITHER_ORGANIZER_NOR_ATTENDEE: participantIsNeitherOrganizerNorAttendee,
   PERMISSION_DENIED: permissionDenied,
   PERMISSION_NOT_FOUND: permissionNotFound,
   PHOTO_NOT_FOUND: photoNotFound,
