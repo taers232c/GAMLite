@@ -22,7 +22,7 @@ For more information, see https://github.com/taers232c/GAMLite
 """
 
 __author__ = 'Ross Scroggs <ross.scroggs@gmail.com>'
-__version__ = '2.00.00'
+__version__ = '2.00.01'
 __license__ = 'Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)'
 
 import base64
@@ -1280,8 +1280,12 @@ def getSvcAcctCredentials(scopesOrAPI, userEmail):
 def checkGAPIError(e, soft_errors=False, retryOnHttpError=False):
   try:
     error = json.loads(e.content.decode(UTF8))
+    if GC.Values[GC.DEBUG_LEVEL] > 0:
+      writeStdout(f'{ERROR_PREFIX} JSON: {str(error)}+\n')
   except (IndexError, KeyError, SyntaxError, TypeError, ValueError):
     eContent = e.content.decode(UTF8) if isinstance(e.content, bytes) else e.content
+    if GC.Values[GC.DEBUG_LEVEL] > 0:
+      writeStdout(f'{ERROR_PREFIX} HTTP: {str(eContent)}+\n')
     if (e.resp['status'] == '503') and (eContent.startswith('Quota exceeded for the current request')):
       return (e.resp['status'], GAPI.QUOTA_EXCEEDED, eContent)
     if (e.resp['status'] == '403') and (eContent.startswith('Request rate higher than configured')):
@@ -1342,6 +1346,8 @@ def checkGAPIError(e, soft_errors=False, retryOnHttpError=False):
         error = {'error': {'errors': [{'reason': GAPI.INVALID, 'message': message}]}}
       elif '@AttachmentNotVisible' in message:
         error = {'error': {'errors': [{'reason': GAPI.BAD_REQUEST, 'message': message}]}}
+      elif 'Precondition check failed' in message:
+        error = {'error': {'errors': [{'reason': GAPI.FAILED_PRECONDITION, 'message': message}]}}
     elif http_status == 403:
       if 'The caller does not have permission' in message or 'Permission iam.serviceAccountKeys' in message:
         error = {'error': {'errors': [{'reason': GAPI.PERMISSION_DENIED, 'message': message}]}}
@@ -1656,7 +1662,7 @@ def getOSPlatform():
   return f'{myos} {pltfrm}'
 
 def Version():
-  return (f'{GAM} {__version__} - {GAM_URL}\n'
+  return (f'{GAM} {__version__} - {GAM_URL} - {GM.Globals[GM.GAM_TYPE]}\n'
           f'{__author__}\n'
           f'Python {sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]} {struct.calcsize("P")*8}-bit {sys.version_info[3]}\n'
           f'google-api-python-client {googleapiclient.__version__}\n'

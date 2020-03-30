@@ -5,10 +5,9 @@
 import gam
 from gamlib import glapi as API
 
-GAMCFG = '/Library/Application Support/GAM/gam.cfg'
-#GAMCFG = '/Users/Ross/.gam/gam.cfg'
+GAMCFG = '/Users/admin/.gam/gam.cfg'
 CHROMEOS_DEVICEID = '32c61153-3808-463b-ba0a-100376212222'
-DOMAIN_NAME = 'rdschool.org'
+DOMAIN_NAME = 'domain.com'
 TESTGROUP = 'testgroup1'+'@'+DOMAIN_NAME
 TESTGROUP_ALIAS = 'testgroup1'+'alias@'+DOMAIN_NAME
 TESTOU = 'Fribble'
