@@ -24,6 +24,8 @@ ALERTCENTER = 'alertcenter'
 CALENDAR = 'calendar'
 CHAT = 'chat'
 CLASSROOM = 'classroom'
+CLOUDIDENTITY_DEVICES = 'cloudidentitydevices'
+CLOUDIDENTITY_GROUPS = 'cloudidentitygroups'
 CLOUDPRINT = 'cloudprint'
 CLOUDRESOURCEMANAGER_V1 = 'cloudresourcemanager1'
 CLOUDRESOURCEMANAGER_V2 = 'cloudresourcemanager2'
@@ -48,6 +50,7 @@ PUBSUB = 'pubsub'
 REPORTS = 'reports'
 RESELLER = 'reseller'
 SERVICEMANAGEMENT = 'servicemanagement'
+SERVICEUSAGE = 'serviceusage'
 SHEETS = 'sheets'
 SHEETSTD = 'sheetstd'
 SITES = 'sites'
@@ -63,6 +66,7 @@ FAM_LIST = [FAM1_SCOPES, FAM2_SCOPES]
 DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
 GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send'
 USERINFO_EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email' # email
+USERINFO_PROFILE_SCOPE = 'https://www.googleapis.com/auth/userinfo.profile' # profile
 VAULT_SCOPES = ['https://www.googleapis.com/auth/ediscovery', 'https://www.googleapis.com/auth/ediscovery.readonly']
 REQUIRED_SCOPES = ['email', 'profile']
 REQUIRED_SCOPES_SET = set(REQUIRED_SCOPES)
@@ -82,7 +86,10 @@ OAUTH2_TOKEN_ERRORS = [
   'invalid_grant: Invalid email or User ID',
   'invalid_grant: Not a valid email',
   'invalid_grant: Invalid JWT: No valid verifier found for issuer',
+  'invalid_grant: reauth related error (invalid_rapt)',
+  'invalid_grant: The account has been deleted',
   'invalid_request: Invalid impersonation prn email address',
+  'invalid_request: Invalid impersonation &quot;sub&quot; field',
   'unauthorized_client: Client is unauthorized to retrieve access tokens using this method',
   'unauthorized_client: Client is unauthorized to retrieve access tokens using this method, or client not authorized for any of the scopes requested',
   'unauthorized_client: Unauthorized client or scope in request',
@@ -97,6 +104,7 @@ PROJECT_APIS = [
   'chat.googleapis.com',
   'classroom.googleapis.com',
   'cloudidentity.googleapis.com',
+  'cloudresourcemanager.googleapis.com',
   'contacts.googleapis.com',
   'drive.googleapis.com',
   'driveactivity.googleapis.com',
@@ -119,6 +127,8 @@ _INFO = {
   ALERTCENTER: {'name': 'AlertCenter API', 'version': 'v1beta1', 'v2discovery': True},
   CALENDAR: {'name': 'Calendar API', 'version': 'v3', 'v2discovery': False},
   CLASSROOM: {'name': 'Classroom API', 'version': 'v1', 'v2discovery': True},
+  CLOUDIDENTITY_DEVICES: {'name': 'Cloud Identity Devices API', 'version': 'v1beta1', 'v2discovery': True, 'mappedAPI': 'cloudidentity'},
+  CLOUDIDENTITY_GROUPS: {'name': 'Cloud Identity Groups API', 'version': 'v1beta1', 'v2discovery': True, 'mappedAPI': 'cloudidentity'},
   CLOUDPRINT: {'name': 'Cloudprint API', 'version': 'v2', 'v2discovery': True, 'localjson': True},
   CLOUDRESOURCEMANAGER_V1: {'name': 'Cloud Resource Manager API v1', 'version': 'v1', 'v2discovery': True, 'mappedAPI': 'cloudresourcemanager'},
   CLOUDRESOURCEMANAGER_V2: {'name': 'Cloud Resource Manager API v2', 'version': 'v2', 'v2discovery': True, 'mappedAPI': 'cloudresourcemanager'},
@@ -143,6 +153,7 @@ _INFO = {
   REPORTS: {'name': 'Reports API', 'version': 'reports_v1', 'v2discovery': False, 'mappedAPI': 'admin'},
   RESELLER: {'name': 'Reseller API', 'version': 'v1', 'v2discovery': False},
   SERVICEMANAGEMENT: {'name': 'Service Management API', 'version': 'v1', 'v2discovery': True},
+  SERVICEUSAGE: {'name': 'Service Usage API', 'version': 'v1', 'v2discovery': True},
   SHEETS: {'name': 'Sheets API', 'version': 'v4', 'v2discovery': True},
   SHEETSTD: {'name': 'Sheets API - todrive', 'version': 'v4', 'v2discovery': True, 'mappedAPI': 'sheets'},
   SITES: {'name': 'Sites API', 'version': 'v1', 'v2discovery': False},
@@ -190,6 +201,14 @@ _CLIENT_SCOPES = [
    'api': CLASSROOM,
    'subscopes': READONLY,
    'scope': 'https://www.googleapis.com/auth/classroom.rosters'},
+#  {'name': 'Cloud Identity Devices API',
+#   'api': CLOUDIDENTITY_DEVICES,
+#   'subscopes': READONLY,
+#   'scope': 'https://www.googleapis.com/auth/cloud-identity.devices'},
+#  {'name': 'Cloud Identity Groups API',
+#   'api': CLOUDIDENTITY_GROUPS,
+#   'subscopes': READONLY,
+#   'scope': 'https://www.googleapis.com/auth/cloud-identity.groups'},
   {'name': 'Cloudprint API',
    'api': CLOUDPRINT,
    'subscopes': [],
@@ -340,7 +359,11 @@ _SVCACCT_SCOPES = [
    'api': CLASSROOM,
    'subscopes': READONLY,
    'scope': 'https://www.googleapis.com/auth/classroom.coursework.students'},
-  {'name': 'Classroom API - Course Rosters',
+  {'name': 'Classroom API - Profile Emails',
+   'api': CLASSROOM,
+   'subscopes': [],
+   'scope': 'https://www.googleapis.com/auth/classroom.profile.emails'},
+  {'name': 'Classroom API - Rosters',
    'api': CLASSROOM,
    'subscopes': READONLY,
    'scope': 'https://www.googleapis.com/auth/classroom.rosters'},
@@ -383,7 +406,7 @@ _SVCACCT_SCOPES = [
   {'name': 'Identity and Access Management API',
    'api': IAM,
    'subscopes': [],
-   'scope': 'https://www.googleapis.com/auth/iam'},
+   'scope': 'https://www.googleapis.com/auth/cloud-platform'},
   {'name': 'People API',
    'api': PEOPLE,
    'subscopes': READONLY,
@@ -399,6 +422,10 @@ _SVCACCT_SCOPES = [
   ]
 
 _SVCACCT_SPECIAL_SCOPES = [
+  {'name': 'Cloud Resource Manager API v1',
+   'api': CLOUDRESOURCEMANAGER_V1,
+   'subscopes': [],
+   'scope': 'https://www.googleapis.com/auth/cloud-platform'},
   {'name': 'Drive API - todrive',
    'api': DRIVETD,
    'subscopes': [],

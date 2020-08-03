@@ -35,16 +35,20 @@ CACHE_DIR = 'gacd'
 CACHE_DISCOVERY_ONLY = 'gcdo'
 # Convert to local time
 CONVERT_TO_LOCAL_TIME = 'ctlt'
-# ChromeOS Auto Update Expiration dates
-CROS_AUE_DATES = 'caue'
 # csvfile keyfield <FieldName> [delimiter <Character>] (matchfield <FieldName> <MatchPattern>)* [datafield <FieldName>(:<FieldName>*) [delimiter <String>]]
 # { key: [datafieldvalues]}
 CSV_DATA_DICT = 'csdd'
 CSV_KEY_FIELD = 'cskf'
 CSV_SUBKEY_FIELD = 'cssk'
 CSV_DATA_FIELD = 'csdf'
+# Column delimiter in CSV output file
+CSV_OUTPUT_COLUMN_DELIMITER = 'codl'
+# Quote character in CSV output file
+CSV_OUTPUT_QUOTE_CHAR = 'coqc'
 # Filter for column headers
 CSV_OUTPUT_HEADER_FILTER = 'cohf'
+# Filter for column headers to drop
+CSV_OUTPUT_HEADER_DROP_FILTER = 'codf'
 # Filter for column values
 CSV_OUTPUT_ROW_FILTER = 'corf'
 # Current API services
@@ -71,7 +75,7 @@ EXTRA_ARGS_LIST = 'exad'
 # gam.cfg file
 GAM_CFG_PATH = 'gcpa'
 GAM_CFG_FILE = 'gcfi'
-# On Windows, file containing oauth create URL
+# File containing oauth create URL
 GAM_OAUTH_URL_TXT = 'gout'
 # Path to gam
 GAM_PATH = 'gpth'
@@ -127,8 +131,6 @@ REDIRECT_FD = 'rdfd'
 REDIRECT_MULTI_FD = 'rdmf'
 REDIRECT_STD = 'rdst'
 REDIRECT_ENCODING = 'rden'
-REDIRECT_COLUMN_DELIMITER = 'rddl'
-REDIRECT_QUOTE_CHAR = 'rdqc'
 REDIRECT_WRITE_HEADER = 'rdwh'
 REDIRECT_MULTIPROCESS = 'rdmp'
 REDIRECT_QUEUE = 'rdq'
@@ -142,6 +144,8 @@ REDIRECT_QUEUE_VALUES = 'values'
 REDIRECT_QUEUE_START = 'start'
 REDIRECT_QUEUE_END = 'end'
 REDIRECT_QUEUE_EOF = 'eof'
+# Section name from outer gam, passed to inner gams
+SECTION = 'sect'
 # Most errors print a message and bail out with a return code
 # Some commands want to set a non-zero return code but not bail
 SYSEXITRC = 'sxrc'
@@ -160,12 +164,14 @@ Globals = {
   CACHE_DIR: None,
   CACHE_DISCOVERY_ONLY: True,
   CONVERT_TO_LOCAL_TIME: False,
-  CROS_AUE_DATES: {},
   CSV_DATA_DICT: {},
   CSV_KEY_FIELD: None,
   CSV_SUBKEY_FIELD: None,
   CSV_DATA_FIELD: None,
+  CSV_OUTPUT_COLUMN_DELIMITER: ',',
+  CSV_OUTPUT_QUOTE_CHAR: '"',
   CSV_OUTPUT_HEADER_FILTER: [],
+  CSV_OUTPUT_HEADER_DROP_FILTER: [],
   CSV_OUTPUT_ROW_FILTER: [],
   CURRENT_API_SERVICES: {},
   CURRENT_CLIENT_API: None,
@@ -207,6 +213,7 @@ Globals = {
   STDERR: {},
   STDOUT: {},
   SAVED_STDOUT: None,
+  SECTION: None,
   SYSEXITRC: 0,
   SYS_ENCODING: 'utf-8',
   TBATCH_QUEUE: None,
