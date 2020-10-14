@@ -1,3 +1,7 @@
+2.00.03
+
+Updated import structure.
+
 2.00.02
 
 Update google_auth, google_auth_httlib2, google_auth_oauthlib, googleapiclient, httplib2 libraries.

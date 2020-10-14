@@ -2,9 +2,15 @@
 """Test GAMLite
 """
 
-import gam
+import os
+import sys
+
+# Move the GAMLib directory wherever you like, set that path in the following line
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__))+'/GAMLib')
+from gam import gam
 from gamlib import glapi as API
 
+# Set the following values as appropriate for your domain
 GAMCFG = '/Users/admin/.gam/gam.cfg'
 CHROMEOS_DEVICEID = '32c61153-3808-463b-ba0a-100376212222'
 DOMAIN_NAME = 'domain.com'
