@@ -1,3 +1,7 @@
+2.00.04
+
+Eliminated references to client_secrets.json.
+
 2.00.03
 
 Updated import structure.
