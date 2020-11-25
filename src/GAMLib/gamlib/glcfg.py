@@ -38,7 +38,6 @@ TLS_CHOICE_MAP = {
   }
 
 FN_CACERTS_PEM = 'cacerts.pem'
-FN_CLIENT_SECRETS_JSON = 'client_secrets.json'
 FN_EXTRA_ARGS_TXT = 'extra-args.txt'
 FN_OAUTH2_TXT = 'oauth2.txt'
 FN_OAUTH2SERVICE_JSON = 'oauth2service.json'
@@ -67,8 +66,6 @@ CACHE_DISCOVERY_ONLY = 'cache_discovery_only'
 CHARSET = 'charset'
 # When retrieving lists of Google Classroom items from API, how many should be retrieved in each chunk
 CLASSROOM_MAX_RESULTS = 'classroom_max_results'
-# Path to client_secrets.json
-CLIENT_SECRETS_JSON = 'client_secrets_json'
 # GAM config directory containing client_secrets.json, oauth2.txt, oauth2service.json, extra_args.txt
 CONFIG_DIR = 'config_dir'
 # When retrieving lists of Google Contacts from API, how many should be retrieved in each chunk
@@ -210,7 +207,6 @@ Defaults = {
   CACHE_DISCOVERY_ONLY: TRUE,
   CHARSET: DEFAULT_CHARSET,
   CLASSROOM_MAX_RESULTS: '0',
-  CLIENT_SECRETS_JSON: FN_CLIENT_SECRETS_JSON,
   CONFIG_DIR: '',
   CONTACT_MAX_RESULTS: '100',
   CSV_INPUT_COLUMN_DELIMITER: ',',
@@ -316,7 +312,6 @@ VAR_INFO = {
   CACHE_DISCOVERY_ONLY: {VAR_TYPE: TYPE_BOOLEAN, VAR_SIGFILE: 'allcache.txt', VAR_SFFT: (TRUE, FALSE)},
   CHARSET: {VAR_TYPE: TYPE_STRING, VAR_ENVVAR: 'GAM_CHARSET', VAR_LIMITS: (1, None)},
   CLASSROOM_MAX_RESULTS: {VAR_TYPE: TYPE_INTEGER, VAR_LIMITS: (0, 1000)},
-  CLIENT_SECRETS_JSON: {VAR_TYPE: TYPE_FILE, VAR_ENVVAR: 'CLIENTSECRETS', VAR_ACCESS: os.R_OK},
   CONFIG_DIR: {VAR_TYPE: TYPE_DIRECTORY, VAR_ENVVAR: 'GAMUSERCONFIGDIR'},
   CONTACT_MAX_RESULTS: {VAR_TYPE: TYPE_INTEGER, VAR_LIMITS: (1, 10000)},
   CSV_INPUT_COLUMN_DELIMITER: {VAR_TYPE: TYPE_CHARACTER},

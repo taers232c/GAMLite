@@ -22,7 +22,7 @@ For more information, see https://github.com/taers232c/GAMLite
 """
 
 __author__ = 'Ross Scroggs <ross.scroggs@gmail.com>'
-__version__ = '2.00.03'
+__version__ = '2.00.04'
 __license__ = 'Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)'
 
 import base64
@@ -396,11 +396,6 @@ def APIAccessDeniedExit():
   if GM.Globals[GM.CURRENT_SVCACCT_API]:
     SvcAcctAPIAccessDeniedExit()
   systemErrorExit(API_ACCESS_DENIED_RC, Msg.API_ACCESS_DENIED)
-
-def invalidClientSecretsJsonExit():
-  stderrErrorMsg(Msg.DOES_NOT_EXIST_OR_HAS_INVALID_FORMAT.format('Client Secrets File', GC.Values[GC.CLIENT_SECRETS_JSON]))
-  writeStderr(Msg.INSTRUCTIONS_CLIENT_SECRETS_JSON)
-  systemErrorExit(CLIENT_SECRETS_JSON_REQUIRED_RC, None)
 
 def invalidOauth2serviceJsonExit():
   stderrErrorMsg(Msg.DOES_NOT_EXIST_OR_HAS_INVALID_FORMAT.format('Service Account OAuth2 File', GC.Values[GC.OAUTH2SERVICE_JSON]))
