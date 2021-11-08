@@ -1,3 +1,10 @@
+2.00.05
+
+The Python libraries are no longer included in the source distribution, do the following command to update your Python libraries.
+```
+pip install --upgrade -r src/requirements.txt
+```
+
 2.00.04
 
 Eliminated references to client_secrets.json.

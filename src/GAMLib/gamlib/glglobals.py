@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020 Ross Scroggs All Rights Reserved.
+# Copyright (C) 2021 Ross Scroggs All Rights Reserved.
 #
 # All Rights Reserved.
 #
@@ -35,6 +35,8 @@ CACHE_DIR = 'gacd'
 CACHE_DISCOVERY_ONLY = 'gcdo'
 # Convert to local time
 CONVERT_TO_LOCAL_TIME = 'ctlt'
+# Credentials scopes
+CREDENTIALS_SCOPES = 'crsc'
 # csvfile keyfield <FieldName> [delimiter <Character>] (matchfield <FieldName> <MatchPattern>)* [datafield <FieldName>(:<FieldName>*) [delimiter <String>]]
 # { key: [datafieldvalues]}
 CSV_DATA_DICT = 'csdd'
@@ -164,6 +166,7 @@ Globals = {
   CACHE_DIR: None,
   CACHE_DISCOVERY_ONLY: True,
   CONVERT_TO_LOCAL_TIME: False,
+  CREDENTIALS_SCOPES: set(),
   CSV_DATA_DICT: {},
   CSV_KEY_FIELD: None,
   CSV_SUBKEY_FIELD: None,
