@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020 Ross Scroggs All Rights Reserved.
+# Copyright (C) 2021 Ross Scroggs All Rights Reserved.
 #
 # All Rights Reserved.
 #
@@ -26,7 +26,6 @@ CHAT = 'chat'
 CLASSROOM = 'classroom'
 CLOUDIDENTITY_DEVICES = 'cloudidentitydevices'
 CLOUDIDENTITY_GROUPS = 'cloudidentitygroups'
-CLOUDPRINT = 'cloudprint'
 CLOUDRESOURCEMANAGER_V1 = 'cloudresourcemanager1'
 CLOUDRESOURCEMANAGER_V2 = 'cloudresourcemanager2'
 CONTACTS = 'contacts'
@@ -37,7 +36,6 @@ DRIVE3 = 'drive3'
 DRIVETD = 'drivetd'
 DRIVEACTIVITY_V1 = 'appsactivity'
 DRIVEACTIVITY_V2 = 'driveactivity'
-EMAIL_AUDIT = 'email-audit'
 GMAIL = 'gmail'
 GROUPSMIGRATION = 'groupsmigration'
 GROUPSSETTINGS = 'groupssettings'
@@ -46,6 +44,8 @@ IAP = 'iap'
 LICENSING = 'licensing'
 OAUTH2 = 'oauth2'
 PEOPLE = 'people'
+PEOPLE_DIRECTORY = 'peopledirectory'
+PEOPLE_OTHERCONTACTS = 'peopleothercontacts'
 PUBSUB = 'pubsub'
 REPORTS = 'reports'
 RESELLER = 'reseller'
@@ -58,6 +58,10 @@ SITEVERIFICATION = 'siteVerification'
 STORAGE = 'storage'
 VAULT = 'vault'
 #
+JWT_APIS = {
+  CHAT: ['https://www.googleapis.com/auth/chat.bot'],
+  }
+#
 GAM_SCOPES = 'gam'
 FAM1_SCOPES = 'fam1'
 FAM2_SCOPES = 'fam2'
@@ -65,6 +69,7 @@ FAM_LIST = [FAM1_SCOPES, FAM2_SCOPES]
 #
 DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
 GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send'
+PEOPLE_SCOPE = 'https://www.googleapis.com/auth/contacts'
 USERINFO_EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email' # email
 USERINFO_PROFILE_SCOPE = 'https://www.googleapis.com/auth/userinfo.profile' # profile
 VAULT_SCOPES = ['https://www.googleapis.com/auth/ediscovery', 'https://www.googleapis.com/auth/ediscovery.readonly']
@@ -73,7 +78,7 @@ REQUIRED_SCOPES_SET = set(REQUIRED_SCOPES)
 #
 REFRESH_PERM_ERRORS = [
   'invalid_grant: reauth related error (rapt_required)', # no way to reauth today
-  'invalid_grant: Token has been expired or revoked.',
+  'invalid_grant: Token has been expired or revoked',
   ]
 
 OAUTH2_TOKEN_ERRORS = [
@@ -90,6 +95,8 @@ OAUTH2_TOKEN_ERRORS = [
   'invalid_grant: The account has been deleted',
   'invalid_request: Invalid impersonation prn email address',
   'invalid_request: Invalid impersonation &quot;sub&quot; field',
+  ]
+OAUTH2_UNAUTHORIZED_ERRORS = [
   'unauthorized_client: Client is unauthorized to retrieve access tokens using this method',
   'unauthorized_client: Client is unauthorized to retrieve access tokens using this method, or client not authorized for any of the scopes requested',
   'unauthorized_client: Unauthorized client or scope in request',
@@ -129,7 +136,6 @@ _INFO = {
   CLASSROOM: {'name': 'Classroom API', 'version': 'v1', 'v2discovery': True},
   CLOUDIDENTITY_DEVICES: {'name': 'Cloud Identity Devices API', 'version': 'v1beta1', 'v2discovery': True, 'mappedAPI': 'cloudidentity'},
   CLOUDIDENTITY_GROUPS: {'name': 'Cloud Identity Groups API', 'version': 'v1beta1', 'v2discovery': True, 'mappedAPI': 'cloudidentity'},
-  CLOUDPRINT: {'name': 'Cloudprint API', 'version': 'v2', 'v2discovery': True, 'localjson': True},
   CLOUDRESOURCEMANAGER_V1: {'name': 'Cloud Resource Manager API v1', 'version': 'v1', 'v2discovery': True, 'mappedAPI': 'cloudresourcemanager'},
   CLOUDRESOURCEMANAGER_V2: {'name': 'Cloud Resource Manager API v2', 'version': 'v2', 'v2discovery': True, 'mappedAPI': 'cloudresourcemanager'},
   CONTACTS: {'name': 'Contacts API', 'version': 'v3', 'v2discovery': False},
@@ -140,7 +146,6 @@ _INFO = {
   DRIVETD: {'name': 'Drive API v3 - todrive', 'version': 'v3', 'v2discovery': False, 'mappedAPI': 'drive'},
   DRIVEACTIVITY_V1: {'name': 'Drive Activity API v1', 'version': 'v1', 'v2discovery': False},
   DRIVEACTIVITY_V2: {'name': 'Drive Activity API v2', 'version': 'v2', 'v2discovery': True},
-  EMAIL_AUDIT: {'name': 'Email Audit API', 'version': 'v1', 'v2discovery': False},
   GMAIL: {'name': 'Gmail API', 'version': 'v1', 'v2discovery': False},
   GROUPSMIGRATION: {'name': 'Groups Migration API', 'version': 'v1', 'v2discovery': False},
   GROUPSSETTINGS: {'name': 'Groups Settings API', 'version': 'v1', 'v2discovery': False},
@@ -149,6 +154,8 @@ _INFO = {
   LICENSING: {'name': 'License Manager API', 'version': 'v1', 'v2discovery': False},
   OAUTH2: {'name': 'OAuth2 API', 'version': 'v2', 'v2discovery': False},
   PEOPLE: {'name': 'People API', 'version': 'v1', 'v2discovery': True},
+  PEOPLE_DIRECTORY: {'name': 'People Directory API', 'version': 'v1', 'v2discovery': True, 'mappedAPI': 'people'},
+  PEOPLE_OTHERCONTACTS: {'name': 'People  API - Other Contacts', 'version': 'v1', 'v2discovery': True, 'mappedAPI': 'people'},
   PUBSUB: {'name': 'Pub / Sub API', 'version': 'v1', 'v2discovery': True},
   REPORTS: {'name': 'Reports API', 'version': 'reports_v1', 'v2discovery': False, 'mappedAPI': 'admin'},
   RESELLER: {'name': 'Reseller API', 'version': 'v1', 'v2discovery': False},
@@ -209,10 +216,6 @@ _CLIENT_SCOPES = [
 #   'api': CLOUDIDENTITY_GROUPS,
 #   'subscopes': READONLY,
 #   'scope': 'https://www.googleapis.com/auth/cloud-identity.groups'},
-  {'name': 'Cloudprint API',
-   'api': CLOUDPRINT,
-   'subscopes': [],
-   'scope': 'https://www.googleapis.com/auth/cloudprint'},
   {'name': 'Cloud Storage (Vault Export - read only)',
    'api': STORAGE,
    'subscopes': [],
@@ -269,10 +272,6 @@ _CLIENT_SCOPES = [
    'api': DIRECTORY,
    'subscopes': READONLY,
    'scope': 'https://www.googleapis.com/auth/admin.directory.user'},
-  {'name': 'Email Audit API',
-   'api': EMAIL_AUDIT,
-   'subscopes': [],
-   'scope': 'https://apps-apis.google.com/a/feeds/compliance/audit/'},
   {'name': 'Groups Migration API',
    'api': GROUPSMIGRATION,
    'subscopes': [],
@@ -288,7 +287,15 @@ _CLIENT_SCOPES = [
   {'name': 'People API',
    'api': PEOPLE,
    'subscopes': READONLY,
-   'scope': 'https://www.googleapis.com/auth/contacts'},
+   'scope': PEOPLE_SCOPE},
+  {'name': 'People Directory API - read only',
+   'api': PEOPLE_DIRECTORY,
+   'subscopes': [],
+   'scope': 'https://www.googleapis.com/auth/directory.readonly'},
+  {'name': 'People API - Other Contacts - read only',
+   'api': PEOPLE_OTHERCONTACTS,
+   'subscopes': [],
+   'scope': 'https://www.googleapis.com/auth/contacts.other.readonly'},
   {'name': 'Pub / Sub API',
    'api': PUBSUB,
    'subscopes': [],
@@ -367,10 +374,6 @@ _SVCACCT_SCOPES = [
    'api': CLASSROOM,
    'subscopes': READONLY,
    'scope': 'https://www.googleapis.com/auth/classroom.rosters'},
-  {'name': 'Cloud Print API',
-   'api': CLOUDPRINT,
-   'subscopes': [],
-   'scope': 'https://www.googleapis.com/auth/cloudprint'},
   {'name': 'Contacts API - Users',
    'api': CONTACTS,
    'subscopes': [],
