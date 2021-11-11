@@ -1104,7 +1104,7 @@ def _getValueFromOAuth(field, credentials=None):
       credentials = getClientCredentials(refreshOnly=True)
     elif credentials.expired:
       credentials.refresh(request)
-    GM.Globals[GM.DECODED_ID_TOKEN] = google.oauth2.id_token.verify_oauth2_token(credentials.id_token, request)
+    GM.Globals[GM.DECODED_ID_TOKEN] = google.oauth2.id_token.verify_oauth2_token(credentials.id_token, request, clock_skew_in_seconds=10)
   return GM.Globals[GM.DECODED_ID_TOKEN].get(field, 'Unknown')
 
 def writeClientCredentials(creds, filename):
@@ -1122,7 +1122,12 @@ def writeClientCredentials(creds, filename):
   if _getValueFromOAuth('iss', creds) not in expected_iss:
     systemErrorExit(OAUTH2_TXT_REQUIRED_RC, f'Wrong OAuth 2.0 credentials issuer. Got {_getValueFromOAuth("iss", creds)} expected one of {", ".join(expected_iss)}')
   request = transportCreateRequest()
-  creds_data['decoded_id_token'] = google.oauth2.id_token.verify_oauth2_token(creds.id_token, request)
+  try:
+    creds_data['decoded_id_token'] = google.oauth2.id_token.verify_oauth2_token(creds.id_token, request, clock_skew_in_seconds=10)
+  except ValueError as e:
+    if 'Token used too early' in str(e):
+      stderrErrorMsg(Msg.PLEASE_CORRECT_YOUR_SYSTEM_TIME)
+    systemErrorExit(SYSTEM_ERROR_RC, str(e))
   GM.Globals[GM.DECODED_ID_TOKEN] = creds_data['decoded_id_token']
   if filename != '-':
     writeFile(filename, json.dumps(creds_data, indent=2, sort_keys=True)+'\n')
